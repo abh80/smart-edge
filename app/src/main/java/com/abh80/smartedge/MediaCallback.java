@@ -36,7 +36,8 @@ public class MediaCallback extends MediaController.Callback {
         super.onMetadataChanged(metadata);
         if (metadata == null) return;
         mediaMetadata = metadata;
-        updateView();
+        ctx.closeOverlay();
+        ctx.mHandler.postDelayed(this::updateView, 350);
     }
 
     private void updateView() {
@@ -47,20 +48,10 @@ public class MediaCallback extends MediaController.Callback {
         }
         ShapeableImageView imageView = mView.findViewById(R.id.cover);
         imageView.setImageBitmap(b);
-        if (mView.findViewById(R.id.cover).getWidth() == 0) {
-            ValueAnimator animator = ValueAnimator.ofInt(0, dpToInt(25));
-            animator.addUpdateListener(v -> {
-                ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
-                layoutParams.width = (int) v.getAnimatedValue();
-                layoutParams.height = (int) v.getAnimatedValue();
-                imageView.setLayoutParams(layoutParams);
-            });
-            animator.setDuration(200);
-            animator.start();
-        }
         String title = mediaMetadata.getText(MediaMetadata.METADATA_KEY_TITLE).toString();
         TextView titleView = mView.findViewById(R.id.title);
         titleView.setText(title);
+        ctx.openOverLay(mCurrent.getPackageName());
     }
 
     @Override
@@ -68,12 +59,13 @@ public class MediaCallback extends MediaController.Callback {
         super.onPlaybackStateChanged(state);
         isPlaying = state.getState() == PlaybackState.STATE_PLAYING;
         if (!isPlaying) ctx.onPlayerPaused();
-        updateView();
+        if (!ctx.current_package_name.equals(mCurrent.getPackageName())) {
+            if (!isPlaying) return;
+            ctx.closeOverlay();
+            ctx.mHandler.postDelayed(this::updateView, 350);
+        }
     }
 
-    private int dpToInt(int v) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, ctx.getResources().getDisplayMetrics());
-    }
 
     @Override
     public void onSessionDestroyed() {

@@ -62,7 +62,7 @@ public class OverlayService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
+    public String current_package_name = "";
     private Map<String, MediaCallback> callbackMap = new HashMap<>();
 
     private void animateOverlay(int h, int w) {
@@ -189,7 +189,7 @@ public class OverlayService extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             mView.setVisibility(View.INVISIBLE);
         } else mView.setVisibility(View.VISIBLE);
     }
@@ -211,6 +211,15 @@ public class OverlayService extends Service {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
     }
 
+    private boolean overlayOpen = false;
+
+    public void openOverLay(String packagename) {
+        if (overlayOpen) return;
+        current_package_name = packagename;
+        animateChild(mView.findViewById(R.id.cover), dpToInt(25), dpToInt(25));
+        overlayOpen = true;
+    }
+
     public void shouldRemoveOverlay() {
         if (getActiveCurrent(mediaSessionManager.getActiveSessions(new ComponentName(this, NotiService.class))) == null) {
             closeOverlay();
@@ -218,10 +227,12 @@ public class OverlayService extends Service {
     }
 
     public void closeOverlay() {
+        if (!overlayOpen) return;
         animateChild(mView.findViewById(R.id.cover), 0, 0);
+        overlayOpen = false;
     }
 
-    private final Handler mHandler = new Handler();
+    public final Handler mHandler = new Handler();
 
     public void onPlayerPaused() {
         last_played = Instant.now();
