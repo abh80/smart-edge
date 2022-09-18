@@ -8,9 +8,12 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
@@ -128,6 +131,7 @@ public class OverlayService extends Service {
 
     private boolean expanded = false;
 
+
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public void onCreate() {
@@ -136,7 +140,7 @@ public class OverlayService extends Service {
         mParams = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
 
                 PixelFormat.TRANSLUCENT);
         layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -157,7 +161,7 @@ public class OverlayService extends Service {
         mParams.verticalMargin = -0.035f;
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
-        mediaSessionManager.addOnActiveSessionsChangedListener((MediaSessionManager.OnActiveSessionsChangedListener) list -> {
+        mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
             list.forEach(x -> {
                 MediaCallback c = new MediaCallback(x, mView, this);
                 callbackMap.put(x.getPackageName(), c);
@@ -182,13 +186,25 @@ public class OverlayService extends Service {
 
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
+            mView.setVisibility(View.INVISIBLE);
+        } else mView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 
     public Instant last_played;
 
     private MediaController getActiveCurrent(List<MediaController> mediaControllers) {
         if (mediaControllers.size() == 0) return null;
         Optional<MediaController> controller = mediaControllers.stream().filter(x -> x.getPlaybackState().getState() == PlaybackState.STATE_PLAYING).findFirst();
-        return controller.orElseGet(() -> mediaControllers.get(0));
+        return controller.orElse(null);
     }
 
     private int dpToInt(int v) {
