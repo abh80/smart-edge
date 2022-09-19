@@ -25,6 +25,7 @@ import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -38,6 +39,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.motion.widget.MotionLayout;
@@ -62,8 +64,8 @@ public class OverlayService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
     public String current_package_name = "";
-    private Map<String, MediaCallback> callbackMap = new HashMap<>();
 
     private void animateOverlay(int h, int w) {
         ValueAnimator height_anim = ValueAnimator.ofInt(mParams.height, h);
@@ -86,12 +88,15 @@ public class OverlayService extends Service {
                 ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
                 if (expanded) {
                     layoutParams.endToStart = ConstraintSet.UNSET;
+                    layoutParams.bottomToTop = R.id.guideline_half;
                     int pad = dpToInt(20);
                     relativeLayout.setPadding(pad, pad, pad, pad);
                 } else {
                     layoutParams.endToStart = R.id.blank_space;
+                    layoutParams.bottomToTop = ConstraintSet.UNSET;
                     relativeLayout.setPadding(0, 0, 0, 0);
                 }
+                relativeLayout.setLayoutParams(layoutParams);
             }
 
             @Override
@@ -100,6 +105,7 @@ public class OverlayService extends Service {
                 if (expanded) {
                     mView.findViewById(R.id.text_info).setVisibility(View.VISIBLE);
                     mView.findViewById(R.id.title).setSelected(true);
+                    mView.findViewById(R.id.artist_subtitle).setSelected(true);
                 } else {
                     mView.findViewById(R.id.text_info).setVisibility(View.GONE);
                     mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
@@ -129,8 +135,34 @@ public class OverlayService extends Service {
         height_anim.start();
     }
 
-    private boolean expanded = false;
+    private void animateChild(View view, int w, int h, CallBack callback) {
+        ValueAnimator height_anim = ValueAnimator.ofInt(view.getHeight(), h);
+        height_anim.setDuration(200);
+        height_anim.addUpdateListener(valueAnimator -> {
+            ViewGroup.LayoutParams params = view.getLayoutParams();
+            params.height = (int) valueAnimator.getAnimatedValue();
+            view.setLayoutParams(params);
+        });
+        ValueAnimator width_anim = ValueAnimator.ofInt(view.getWidth(), w);
+        width_anim.setDuration(200);
+        width_anim.addUpdateListener(v2 -> {
+            ViewGroup.LayoutParams params = view.getLayoutParams();
+            params.width = (int) v2.getAnimatedValue();
+            view.setLayoutParams(params);
+        });
+        height_anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                callback.onFinish();
+            }
+        });
+        width_anim.start();
+        height_anim.start();
+    }
 
+    private boolean expanded = false;
+    public Map<String, MediaController.Callback> callbackMap = new HashMap<>();
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -151,7 +183,7 @@ public class OverlayService extends Service {
             if (!expanded) {
                 expanded = true;
                 animateOverlay(500, mWindowManager.getCurrentWindowMetrics().getBounds().width() - 40);
-                animateChild(mView.findViewById(R.id.cover), 250, 250);
+                animateChild(mView.findViewById(R.id.cover), 200, 200);
             } else {
                 expanded = false;
                 animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -163,12 +195,14 @@ public class OverlayService extends Service {
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
             list.forEach(x -> {
+                if (callbackMap.get(x.getPackageName()) != null) return;
                 MediaCallback c = new MediaCallback(x, mView, this);
                 callbackMap.put(x.getPackageName(), c);
                 x.registerCallback(c);
             });
         }, new ComponentName(this, NotiService.class));
         mediaSessionManager.getActiveSessions(new ComponentName(this, NotiService.class)).forEach(x -> {
+            if (callbackMap.get(x.getPackageName()) != null) return;
             MediaCallback c = new MediaCallback(x, mView, this);
             callbackMap.put(x.getPackageName(), c);
             x.registerCallback(c);
@@ -229,6 +263,16 @@ public class OverlayService extends Service {
     public void closeOverlay() {
         if (!overlayOpen) return;
         animateChild(mView.findViewById(R.id.cover), 0, 0);
+        overlayOpen = false;
+    }
+
+    public void closeOverlay(CallBack callback) {
+        if (!overlayOpen) {
+            callback.onFinish();
+            return;
+        }
+        ;
+        animateChild(mView.findViewById(R.id.cover), 0, 0, callback);
         overlayOpen = false;
     }
 
