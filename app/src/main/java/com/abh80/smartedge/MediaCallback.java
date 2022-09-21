@@ -58,6 +58,7 @@ public class MediaCallback extends MediaController.Callback {
         titleView.setText(title);
         artistView.setText(artist);
         ctx.openOverLay(mCurrent.getPackageName());
+        ctx.mCurrent = mCurrent;
     }
 
     @Override
@@ -67,6 +68,10 @@ public class MediaCallback extends MediaController.Callback {
         if (!isPlaying) ctx.onPlayerPaused();
         if (!ctx.current_package_name.equals(mCurrent.getPackageName())) {
             if (!isPlaying) return;
+            if (ctx.expanded) {
+                updateView();
+                return;
+            }
             ctx.closeOverlay(new CallBack() {
                 @Override
                 public void onFinish() {
@@ -76,10 +81,15 @@ public class MediaCallback extends MediaController.Callback {
             });
         } else {
             if (!isPlaying) return;
+            if (ctx.expanded) {
+                updateView();
+                return;
+            }
             ctx.closeOverlay(new CallBack() {
                 @Override
                 public void onFinish() {
                     super.onFinish();
+                    mediaMetadata = mCurrent.getMetadata();
                     updateView();
                 }
             });
@@ -93,6 +103,7 @@ public class MediaCallback extends MediaController.Callback {
         if (mCurrent != null) {
             mCurrent.unregisterCallback(this);
             ctx.callbackMap.remove(mCurrent.getPackageName());
+            ctx.mCurrent = null;
         }
         ctx.shouldRemoveOverlay();
 

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Smart Edge</string>
     <string name="cover">cover</string>
+    <string name="pause_play">pause/play</string>
+    <string name="next">next</string>
+    <string name="back">back</string>
 </resources>

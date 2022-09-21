@@ -2,22 +2,18 @@ package com.abh80.smartedge;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
+import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
-import android.media.Image;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
@@ -25,40 +21,68 @@ import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.DragEvent;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.NotificationCompat;
 
-import com.google.android.material.imageview.ShapeableImageView;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 public class OverlayService extends Service {
+    private SeekBar seekBar;
+    private TextView elapsedView;
+    private TextView remainingView;
+    private Runnable r = new Runnable() {
+        @Override
+        public void run() {
+            if (!expanded) return;
+            if (mCurrent == null) {
+                expanded = false;
+                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+            long elapsed = mCurrent.getPlaybackState().getPosition();
+            if (elapsed < 0) {
+                expanded = false;
+                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                return;
+            }
+            if (mCurrent.getMetadata() == null) {
+                expanded = false;
+                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                return;
+            }
+            long total = mCurrent.getMetadata().getLong(MediaMetadata.METADATA_KEY_DURATION);
+            elapsedView.setText(DurationFormatUtils.formatDuration(elapsed, "mm:ss", true));
+            remainingView.setText("-" + DurationFormatUtils.formatDuration(Math.abs(total - elapsed), "mm:ss", true));
+            if (!seekbar_dragging) seekBar.setProgress((int) ((((float) elapsed / total) * 100)));
+            mHandler.post(r);
+        }
+    };
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -91,6 +115,7 @@ public class OverlayService extends Service {
                     layoutParams.bottomToTop = R.id.guideline_half;
                     int pad = dpToInt(20);
                     relativeLayout.setPadding(pad, pad, pad, pad);
+                    mHandler.post(r);
                 } else {
                     layoutParams.endToStart = R.id.blank_space;
                     layoutParams.bottomToTop = ConstraintSet.UNSET;
@@ -104,17 +129,34 @@ public class OverlayService extends Service {
                 super.onAnimationEnd(animation);
                 if (expanded) {
                     mView.findViewById(R.id.text_info).setVisibility(View.VISIBLE);
+                    mView.findViewById(R.id.controls_holder).setVisibility(View.VISIBLE);
+                    mView.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
                     mView.findViewById(R.id.title).setSelected(true);
                     mView.findViewById(R.id.artist_subtitle).setSelected(true);
+                    mView.findViewById(R.id.elapsed).setVisibility(View.VISIBLE);
+                    mView.findViewById(R.id.remaining).setVisibility(View.VISIBLE);
                 } else {
                     mView.findViewById(R.id.text_info).setVisibility(View.GONE);
+                    mView.findViewById(R.id.controls_holder).setVisibility(View.GONE);
+                    mView.findViewById(R.id.progressBar).setVisibility(View.GONE);
                     mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
+                    mView.findViewById(R.id.elapsed).setVisibility(View.GONE);
+                    mView.findViewById(R.id.remaining).setVisibility(View.GONE);
                 }
             }
         });
+        if (expanded) {
+            width_anim.setInterpolator(new DecelerateInterpolator());
+            height_anim.setInterpolator(new DecelerateInterpolator());
+        }else {
+            width_anim.setInterpolator(new AccelerateInterpolator());
+            height_anim.setInterpolator(new AccelerateInterpolator());
+        }
         width_anim.start();
         height_anim.start();
     }
+
+    public MediaController mCurrent;
 
     private void animateChild(View view, int w, int h) {
         ValueAnimator height_anim = ValueAnimator.ofInt(view.getHeight(), h);
@@ -161,9 +203,11 @@ public class OverlayService extends Service {
         height_anim.start();
     }
 
-    private boolean expanded = false;
+    public boolean expanded = false;
     public Map<String, MediaController.Callback> callbackMap = new HashMap<>();
+    private boolean seekbar_dragging = false;
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public void onCreate() {
@@ -177,8 +221,49 @@ public class OverlayService extends Service {
                 PixelFormat.TRANSLUCENT);
         layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
+        seekBar = mView.findViewById(R.id.progressBar);
+
+        elapsedView = mView.findViewById(R.id.elapsed);
+        remainingView = mView.findViewById(R.id.remaining);
         mView.findViewById(R.id.blank_space).setMinimumWidth(200);
         mParams.gravity = Gravity.TOP;
+        ImageView pause_play = mView.findViewById(R.id.pause_play);
+        ImageView next = mView.findViewById(R.id.next_play);
+        ImageView back = mView.findViewById(R.id.back_play);
+        pause_play.setOnClickListener(l -> {
+            if (mCurrent == null) return;
+            if (mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PAUSED) {
+                mCurrent.getTransportControls().play();
+                pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.ic_baseline_pause_24));
+            } else {
+                mCurrent.getTransportControls().pause();
+                pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.ic_baseline_play_arrow_24));
+            }
+        });
+        next.setOnClickListener(l -> {
+            if (mCurrent == null) return;
+            mCurrent.getTransportControls().skipToNext();
+        });
+        back.setOnClickListener(l -> {
+            if (mCurrent == null) return;
+            mCurrent.getTransportControls().skipToPrevious();
+        });
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                seekbar_dragging = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekbar_dragging = false;
+                mCurrent.getTransportControls().seekTo((long) ((float) seekBar.getProgress() / 100 * mCurrent.getMetadata().getLong(MediaMetadata.METADATA_KEY_DURATION)));
+            }
+        });
         mView.setOnClickListener(l -> {
             if (!expanded) {
                 expanded = true;
@@ -257,6 +342,7 @@ public class OverlayService extends Service {
     public void shouldRemoveOverlay() {
         if (getActiveCurrent(mediaSessionManager.getActiveSessions(new ComponentName(this, NotiService.class))) == null) {
             closeOverlay();
+            mCurrent = null;
         }
     }
 

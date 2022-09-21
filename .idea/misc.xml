@@ -3,6 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/custom_progress_bar_horizontal.xml" value="0.1755" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_baseline_fast_forward_24.xml" value="0.2455" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_baseline_fast_rewind_24.xml" value="0.2455" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_baseline_pause_24.xml" value="0.2455" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.2455" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/overlay_layout.xml" value="0.34479166666666666" />
         <entry key="app/src/main/res/drawable/rounded_corner.xml" value="0.2805" />
         <entry key="app/src/main/res/layout/overlay_layout.xml" value="0.5" />
       </map>
