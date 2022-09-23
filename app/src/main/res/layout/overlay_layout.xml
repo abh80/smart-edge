@@ -165,7 +165,7 @@
             android:contentDescription="@string/back"
             android:foreground="?android:selectableItemBackground"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_baseline_fast_rewind_24" />
+            android:src="@drawable/fast_rewind" />
 
         <ImageButton
             android:id="@+id/pause_play"
@@ -175,7 +175,7 @@
             android:contentDescription="@string/pause_play"
             android:foreground="?android:selectableItemBackground"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_baseline_pause_24" />
+            android:src="@drawable/pause" />
 
         <ImageButton
             android:id="@+id/next_play"
@@ -185,6 +185,6 @@
             android:contentDescription="@string/next"
             android:foreground="?android:selectableItemBackground"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_baseline_fast_forward_24" />
+            android:src="@drawable/fast_forward" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

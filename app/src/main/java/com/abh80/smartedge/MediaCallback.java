@@ -25,9 +25,12 @@ public class MediaCallback extends MediaController.Callback {
         this.mCurrent = mCurrent;
         this.mView = view;
         this.ctx = context;
-        mediaMetadata = mCurrent.getMetadata();
-        isPlaying = mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING;
-        updateView();
+        try {
+            isPlaying = mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING;
+            updateView();
+        } catch (Exception e) {
+            // do nothing lol
+        }
     }
 
     private final OverlayService ctx;
@@ -36,15 +39,10 @@ public class MediaCallback extends MediaController.Callback {
     private MediaMetadata mediaMetadata;
     private boolean isPlaying = true;
 
-    @Override
-    public void onMetadataChanged(@Nullable MediaMetadata metadata) {
-        super.onMetadataChanged(metadata);
-        if (metadata == null) return;
-        mediaMetadata = metadata;
-    }
-
     private void updateView() {
         if (!isPlaying) return;
+        if (mCurrent.getMetadata() == null) return;
+        mediaMetadata = mCurrent.getMetadata();
         Bitmap b = mediaMetadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
         if (b == null) {
             return;
@@ -64,8 +62,17 @@ public class MediaCallback extends MediaController.Callback {
     @Override
     public void onPlaybackStateChanged(@Nullable PlaybackState state) {
         super.onPlaybackStateChanged(state);
-        isPlaying = state.getState() == PlaybackState.STATE_PLAYING;
-        if (!isPlaying) ctx.onPlayerPaused();
+        if (state == null || mCurrent.getMetadata() == null) return;
+        boolean isPlaying2 = state.getState() == PlaybackState.STATE_PLAYING;
+        if (mediaMetadata != null && mediaMetadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART).sameAs(mCurrent.getMetadata().getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)) && isPlaying2 != isPlaying) {
+            if (!isPlaying2) ctx.onPlayerPaused(true);
+            else ctx.onPlayerResume(true);
+            isPlaying = isPlaying2;
+            return;
+        }
+        isPlaying = isPlaying2;
+
+        if (!isPlaying) ctx.onPlayerPaused(false);
         if (!ctx.current_package_name.equals(mCurrent.getPackageName())) {
             if (!isPlaying) return;
             if (ctx.expanded) {
@@ -81,6 +88,7 @@ public class MediaCallback extends MediaController.Callback {
             });
         } else {
             if (!isPlaying) return;
+
             if (ctx.expanded) {
                 updateView();
                 return;
@@ -89,13 +97,11 @@ public class MediaCallback extends MediaController.Callback {
                 @Override
                 public void onFinish() {
                     super.onFinish();
-                    mediaMetadata = mCurrent.getMetadata();
                     updateView();
                 }
             });
         }
     }
-
 
     @Override
     public void onSessionDestroyed() {

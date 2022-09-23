@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
@@ -33,6 +34,7 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -63,16 +65,20 @@ public class OverlayService extends Service {
             if (mCurrent == null) {
                 expanded = false;
                 animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                closeOverlay();
+                return;
             }
             long elapsed = mCurrent.getPlaybackState().getPosition();
             if (elapsed < 0) {
                 expanded = false;
                 animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                closeOverlay();
                 return;
             }
             if (mCurrent.getMetadata() == null) {
                 expanded = false;
                 animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                closeOverlay();
                 return;
             }
             long total = mCurrent.getMetadata().getLong(MediaMetadata.METADATA_KEY_DURATION);
@@ -82,6 +88,7 @@ public class OverlayService extends Service {
             mHandler.post(r);
         }
     };
+    private ImageView pause_play;
 
     @Nullable
     @Override
@@ -124,6 +131,7 @@ public class OverlayService extends Service {
                 relativeLayout.setLayoutParams(layoutParams);
             }
 
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
@@ -135,6 +143,13 @@ public class OverlayService extends Service {
                     mView.findViewById(R.id.artist_subtitle).setSelected(true);
                     mView.findViewById(R.id.elapsed).setVisibility(View.VISIBLE);
                     mView.findViewById(R.id.remaining).setVisibility(View.VISIBLE);
+                    if (mCurrent != null && mCurrent.getPlaybackState() != null) {
+                        if (mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
+                            pause_play.setImageDrawable(getDrawable(R.drawable.pause));
+                        } else {
+                            pause_play.setImageDrawable(getDrawable(R.drawable.play));
+                        }
+                    }
                 } else {
                     mView.findViewById(R.id.text_info).setVisibility(View.GONE);
                     mView.findViewById(R.id.controls_holder).setVisibility(View.GONE);
@@ -148,7 +163,7 @@ public class OverlayService extends Service {
         if (expanded) {
             width_anim.setInterpolator(new DecelerateInterpolator());
             height_anim.setInterpolator(new DecelerateInterpolator());
-        }else {
+        } else {
             width_anim.setInterpolator(new AccelerateInterpolator());
             height_anim.setInterpolator(new AccelerateInterpolator());
         }
@@ -227,17 +242,17 @@ public class OverlayService extends Service {
         remainingView = mView.findViewById(R.id.remaining);
         mView.findViewById(R.id.blank_space).setMinimumWidth(200);
         mParams.gravity = Gravity.TOP;
-        ImageView pause_play = mView.findViewById(R.id.pause_play);
+        pause_play = mView.findViewById(R.id.pause_play);
         ImageView next = mView.findViewById(R.id.next_play);
         ImageView back = mView.findViewById(R.id.back_play);
         pause_play.setOnClickListener(l -> {
             if (mCurrent == null) return;
             if (mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PAUSED) {
                 mCurrent.getTransportControls().play();
-                pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.ic_baseline_pause_24));
+
             } else {
                 mCurrent.getTransportControls().pause();
-                pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.ic_baseline_play_arrow_24));
+
             }
         });
         next.setOnClickListener(l -> {
@@ -265,10 +280,14 @@ public class OverlayService extends Service {
             }
         });
         mView.setOnClickListener(l -> {
+            if (!overlayOpen) return;
+
+            DisplayMetrics metrics = new DisplayMetrics();
+            mWindowManager.getDefaultDisplay().getMetrics(metrics);
             if (!expanded) {
                 expanded = true;
-                animateOverlay(500, mWindowManager.getCurrentWindowMetrics().getBounds().width() - 40);
-                animateChild(mView.findViewById(R.id.cover), 200, 200);
+                animateOverlay(500, metrics.widthPixels - 40);
+                animateChild(mView.findViewById(R.id.cover), (int) (500 / 2.5), (int) (500 / 2.5));
             } else {
                 expanded = false;
                 animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -364,7 +383,21 @@ public class OverlayService extends Service {
 
     public final Handler mHandler = new Handler();
 
-    public void onPlayerPaused() {
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public void onPlayerResume(boolean b) {
+        if (expanded && b) {
+            pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.avd_play_to_pause));
+            ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
+        }
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public void onPlayerPaused(boolean b) {
+        if (expanded && b) {
+            pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.avd_pause_to_play));
+            ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
+        }
+        if (b) return;
         last_played = Instant.now();
         mHandler.postDelayed(() -> {
             if (Math.abs(Instant.now().toEpochMilli() - last_played.toEpochMilli()) >= 60 * 1000) {
