@@ -29,7 +29,24 @@
             android:contentDescription="@string/cover"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.circleImageView" />
     </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/relativeLayout4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingVertical="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/blank_space"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry,UselessLeaf">
 
+        <com.abh80.smartedge.SongVisualizer
+            android:id="@+id/visualizer"
+            android:layout_marginEnd="8dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp" />
+
+    </RelativeLayout>
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_half"
         android:layout_width="match_parent"
@@ -108,13 +125,13 @@
 
     <TextView
         android:id="@+id/elapsed"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="31dp"
         android:layout_marginBottom="3dp"
         android:text="1:19"
         android:textColor="@color/not_quite_white"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline_half"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -126,23 +143,23 @@
         android:layout_marginHorizontal="10dp"
         android:layout_marginBottom="6dp"
         android:progress="50"
-        android:visibility="gone"
-        android:thumb="@color/transparent"
         android:progressDrawable="@drawable/custom_progress_bar_horizontal"
         android:scaleY="0.8"
+        android:thumb="@color/transparent"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline_half"
         app:layout_constraintEnd_toStartOf="@+id/remaining"
         app:layout_constraintStart_toEndOf="@+id/elapsed" />
 
     <TextView
         android:id="@+id/remaining"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="31dp"
         android:layout_marginBottom="3dp"
         android:text="-1:19"
         android:textColor="@color/not_quite_white"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/guideline_half"
         app:layout_constraintEnd_toEndOf="parent" />
 

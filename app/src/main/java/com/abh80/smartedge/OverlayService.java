@@ -13,9 +13,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.MediaMetadata;
+import android.media.MediaRecorder;
+import android.media.audiofx.Visualizer;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
@@ -58,7 +62,7 @@ public class OverlayService extends Service {
     private SeekBar seekBar;
     private TextView elapsedView;
     private TextView remainingView;
-    private Runnable r = new Runnable() {
+    private final Runnable r = new Runnable() {
         @Override
         public void run() {
             if (!expanded) return;
@@ -281,7 +285,6 @@ public class OverlayService extends Service {
         });
         mView.setOnClickListener(l -> {
             if (!overlayOpen) return;
-
             DisplayMetrics metrics = new DisplayMetrics();
             mWindowManager.getDefaultDisplay().getMetrics(metrics);
             if (!expanded) {
@@ -339,7 +342,7 @@ public class OverlayService extends Service {
 
     public Instant last_played;
 
-    private MediaController getActiveCurrent(List<MediaController> mediaControllers) {
+    public MediaController getActiveCurrent(List<MediaController> mediaControllers) {
         if (mediaControllers.size() == 0) return null;
         Optional<MediaController> controller = mediaControllers.stream().filter(x -> x.getPlaybackState().getState() == PlaybackState.STATE_PLAYING).findFirst();
         return controller.orElse(null);
@@ -389,6 +392,7 @@ public class OverlayService extends Service {
             pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.avd_play_to_pause));
             ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
         }
+
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -397,7 +401,6 @@ public class OverlayService extends Service {
             pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.avd_pause_to_play));
             ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
         }
-        if (b) return;
         last_played = Instant.now();
         mHandler.postDelayed(() -> {
             if (Math.abs(Instant.now().toEpochMilli() - last_played.toEpochMilli()) >= 60 * 1000) {
@@ -411,7 +414,7 @@ public class OverlayService extends Service {
     private WindowManager.LayoutParams mParams;
     private WindowManager mWindowManager;
     private LayoutInflater layoutInflater;
-    private MediaSessionManager mediaSessionManager;
+    public MediaSessionManager mediaSessionManager;
     DisplayMetrics metrics;
 
     private void startOnForeground() {
