@@ -501,7 +501,7 @@ public class OverlayService extends Service {
         Notification notification = notificationBuilder.setOngoing(true)
                 .setContentTitle("Service running")
                 .setContentText("Displaying over other apps")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
 
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
