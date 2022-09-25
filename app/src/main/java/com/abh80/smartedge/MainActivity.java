@@ -17,18 +17,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
-        if (Settings.canDrawOverlays(this)) {
-            if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
-                startForegroundService(new Intent(this, OverlayService.class));
-            } else {
-                startActivity(new Intent(
-                        "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-            }
-        } else {
-            Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-            startActivity(myIntent);
+        if (!Settings.canDrawOverlays(this) || !Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            startActivity(new Intent(this, PermissionActivity.class));
+            return;
         }
+
     }
 
     @Override
