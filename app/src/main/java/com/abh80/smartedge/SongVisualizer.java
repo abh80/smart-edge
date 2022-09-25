@@ -2,6 +2,7 @@ package com.abh80.smartedge;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.media.audiofx.Visualizer;
 import android.util.AttributeSet;
@@ -15,38 +16,50 @@ public class SongVisualizer extends View {
 
     public SongVisualizer(Context context) {
         super(context);
+        init();
     }
 
     public SongVisualizer(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public SongVisualizer(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
     }
 
     private byte[] bytes;
 
     public void setPlayerId(int sessionID) {
-        visualizer = new Visualizer(sessionID);
-        visualizer.setEnabled(false);
-        visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-        visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
-            @Override
-            public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes,
-                                              int samplingRate) {
-                SongVisualizer.this.bytes = bytes;
-                invalidate();
+        try {
+            if (visualizer != null) {
+                release();
+                visualizer = null;
             }
+            visualizer = new Visualizer(sessionID);
+            visualizer.setEnabled(false);
+            visualizer.setScalingMode(Visualizer.SCALING_MODE_NORMALIZED);
+            visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+            visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                @Override
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes,
+                                                  int samplingRate) {
+                    SongVisualizer.this.bytes = bytes;
+                    invalidate();
+                }
 
-            @Override
-            public void onFftDataCapture(Visualizer visualizer, byte[] bytes,
-                                         int samplingRate) {
-            }
-        }, Visualizer.getMaxCaptureRate() / 2, true, false);
+                @Override
+                public void onFftDataCapture(Visualizer visualizer, byte[] bytes,
+                                             int samplingRate) {
+                }
+            }, Visualizer.getMaxCaptureRate() / 2, true, false);
 
 
-        visualizer.setEnabled(true);
+            visualizer.setEnabled(true);
+        } catch (Exception e) {
+            // do nothing lol
+        }
     }
 
     public void release() {
@@ -59,7 +72,17 @@ public class SongVisualizer extends View {
         invalidate();
     }
 
-    public Paint paint = new Paint();
+    private void init() {
+        setColor(Color.BLUE);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    public void setColor(int Color) {
+        paint.setColor(Color);
+    }
+
+    private final Paint paint = new Paint();
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -72,10 +95,14 @@ public class SongVisualizer extends View {
 
             for (int i = 0; i < density; i++) {
                 int bytePosition = (int) Math.ceil(i * div);
-                int top = (getHeight() - 20) +
-                        ((byte) (Math.abs(bytes[bytePosition]) + 128)) * (getHeight() - 20) / 128;
                 float barX = (i * barWidth) + (barWidth / 2);
-                canvas.drawLine(barX, ((getHeight() + 20) - top) / 2f, barX, top, paint);
+                if (bytes[bytePosition] == 0 || bytes[bytePosition] + 128 == 0) {
+                    canvas.drawLine(barX, (getHeight() / 2f), barX, (getHeight() / 2f), paint);
+                } else {
+                    int top = (getHeight() - 20) +
+                            ((byte) (Math.abs(bytes[bytePosition]) + 128)) * (getHeight() - 20) / 128;
+                    canvas.drawLine(barX, ((getHeight() + 20) - top) / 2f, barX, top, paint);
+                }
             }
             super.onDraw(canvas);
         }

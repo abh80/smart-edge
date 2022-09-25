@@ -13,6 +13,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
@@ -56,6 +57,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class OverlayService extends Service {
@@ -177,48 +179,69 @@ public class OverlayService extends Service {
 
     public MediaController mCurrent;
 
-    private void animateChild(View view, int w, int h) {
-        ValueAnimator height_anim = ValueAnimator.ofInt(view.getHeight(), h);
+    private void animateChild(boolean expanding, int h) {
+        View view1 = mView.findViewById(R.id.cover);
+        View view2 = visualizer;
+        ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
         height_anim.setDuration(200);
         height_anim.addUpdateListener(valueAnimator -> {
-            ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.height = (int) valueAnimator.getAnimatedValue();
-            view.setLayoutParams(params);
+            ViewGroup.LayoutParams params1 = view1.getLayoutParams();
+            ViewGroup.LayoutParams params2 = view2.getLayoutParams();
+            params1.height = (int) valueAnimator.getAnimatedValue();
+            params1.width = (int) valueAnimator.getAnimatedValue();
+            params2.height = (int) valueAnimator.getAnimatedValue();
+            params2.width = (int) valueAnimator.getAnimatedValue();
+            view2.setLayoutParams(params2);
+
+            view1.setLayoutParams(params1);
         });
-        ValueAnimator width_anim = ValueAnimator.ofInt(view.getWidth(), w);
-        width_anim.setDuration(200);
-        width_anim.addUpdateListener(v2 -> {
-            ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.width = (int) v2.getAnimatedValue();
-            view.setLayoutParams(params);
+        height_anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                if (expanding) view2.setVisibility(View.INVISIBLE);
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (!expanding) view2.setVisibility(View.VISIBLE);
+
+            }
         });
-        width_anim.start();
         height_anim.start();
     }
 
-    private void animateChild(View view, int w, int h, CallBack callback) {
-        ValueAnimator height_anim = ValueAnimator.ofInt(view.getHeight(), h);
+    private void animateChild(boolean expanding, int h, CallBack callback) {
+        View view1 = mView.findViewById(R.id.cover);
+        View view2 = visualizer;
+        ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
         height_anim.setDuration(200);
         height_anim.addUpdateListener(valueAnimator -> {
-            ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.height = (int) valueAnimator.getAnimatedValue();
-            view.setLayoutParams(params);
-        });
-        ValueAnimator width_anim = ValueAnimator.ofInt(view.getWidth(), w);
-        width_anim.setDuration(200);
-        width_anim.addUpdateListener(v2 -> {
-            ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.width = (int) v2.getAnimatedValue();
-            view.setLayoutParams(params);
+            ViewGroup.LayoutParams params1 = view1.getLayoutParams();
+            ViewGroup.LayoutParams params2 = view2.getLayoutParams();
+            params1.height = (int) valueAnimator.getAnimatedValue();
+            params2.height = (int) valueAnimator.getAnimatedValue();
+            params1.width = (int) valueAnimator.getAnimatedValue();
+            params2.width = (int) valueAnimator.getAnimatedValue();
+            view1.setLayoutParams(params1);
+            view2.setLayoutParams(params2);
         });
         height_anim.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                if (!expanding) view2.setVisibility(View.VISIBLE);
                 callback.onFinish();
             }
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                if (expanding) view2.setVisibility(View.INVISIBLE);
+            }
         });
-        width_anim.start();
         height_anim.start();
     }
 
@@ -235,7 +258,7 @@ public class OverlayService extends Service {
         mParams = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
 
                 PixelFormat.TRANSLUCENT);
         layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -244,8 +267,9 @@ public class OverlayService extends Service {
 
         elapsedView = mView.findViewById(R.id.elapsed);
         remainingView = mView.findViewById(R.id.remaining);
+        mParams.verticalMargin = 0.005f;
         mView.findViewById(R.id.blank_space).setMinimumWidth(200);
-        mParams.gravity = Gravity.TOP;
+        mParams.gravity = Gravity.TOP | Gravity.CENTER;
         pause_play = mView.findViewById(R.id.pause_play);
         ImageView next = mView.findViewById(R.id.next_play);
         ImageView back = mView.findViewById(R.id.back_play);
@@ -283,6 +307,7 @@ public class OverlayService extends Service {
                 mCurrent.getTransportControls().seekTo((long) ((float) seekBar.getProgress() / 100 * mCurrent.getMetadata().getLong(MediaMetadata.METADATA_KEY_DURATION)));
             }
         });
+        visualizer = mView.findViewById(R.id.visualizer);
         mView.setOnClickListener(l -> {
             if (!overlayOpen) return;
             DisplayMetrics metrics = new DisplayMetrics();
@@ -290,14 +315,13 @@ public class OverlayService extends Service {
             if (!expanded) {
                 expanded = true;
                 animateOverlay(500, metrics.widthPixels - 40);
-                animateChild(mView.findViewById(R.id.cover), (int) (500 / 2.5), (int) (500 / 2.5));
+                animateChild(true, (int) (500 / 2.5));
             } else {
                 expanded = false;
                 animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-                animateChild(mView.findViewById(R.id.cover), dpToInt(25), dpToInt(25));
+                animateChild(false, dpToInt(25));
             }
         });
-        mParams.verticalMargin = -0.035f;
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
@@ -352,12 +376,12 @@ public class OverlayService extends Service {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
     }
 
-    private boolean overlayOpen = false;
+    public boolean overlayOpen = false;
 
     public void openOverLay(String packagename) {
         if (overlayOpen) return;
         current_package_name = packagename;
-        animateChild(mView.findViewById(R.id.cover), dpToInt(25), dpToInt(25));
+        animateChild(false, dpToInt(25));
         overlayOpen = true;
     }
 
@@ -370,7 +394,7 @@ public class OverlayService extends Service {
 
     public void closeOverlay() {
         if (!overlayOpen) return;
-        animateChild(mView.findViewById(R.id.cover), 0, 0);
+        animateChild(false, 0);
         overlayOpen = false;
     }
 
@@ -379,12 +403,19 @@ public class OverlayService extends Service {
             callback.onFinish();
             return;
         }
-        ;
-        animateChild(mView.findViewById(R.id.cover), 0, 0, callback);
+
+        animateChild(false, 0, callback);
         overlayOpen = false;
     }
 
     public final Handler mHandler = new Handler();
+
+    private boolean isColorDark(int color) {
+        // Source : https://stackoverflow.com/a/24261119
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        // It's a dark color
+        return !(darkness < 0.5); // It's a light color
+    }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     public void onPlayerResume(boolean b) {
@@ -392,8 +423,41 @@ public class OverlayService extends Service {
             pause_play.setImageDrawable(getBaseContext().getDrawable(R.drawable.avd_play_to_pause));
             ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
         }
+        if (mCurrent == null) return;
+        int index = -1;
+        List<MediaController> controllerList = mediaSessionManager.getActiveSessions(new ComponentName(this, NotiService.class));
+        for (int v = 0; v < controllerList.size(); v++) {
+            if (Objects.equals(controllerList.get(v).getPackageName(), mCurrent.getPackageName())) {
+                index = v;
+                break;
+            }
+
+        }
+        if (index == -1) return;
+        visualizer.setPlayerId(index);
+        if (mCurrent.getMetadata() == null) return;
+        Bitmap bm = mCurrent.getMetadata().getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+        if (bm == null) return;
+        int dc = getDominantColor(bm);
+        if (isColorDark(dc)) {
+           dc = lightenColor(dc);
+        }
+        visualizer.setColor(dc);
+    }
+
+    private int lightenColor(int colorin) {
+        Color color = Color.valueOf(colorin);
+        double fraction = 0.5;
+        float red = (float) (Math.min(255, color.red() + 255 * fraction) / 225f);
+        float green = (float) (Math.min(255, color.green() + 255 * fraction) / 225f);
+        float blue = (float) (Math.min(255, color.blue() + 255 * fraction) / 225f);
+        float alpha = color.alpha();
+
+        return Color.valueOf(red , green , blue , alpha).toArgb();
 
     }
+
+    private SongVisualizer visualizer;
 
     @SuppressLint("UseCompatLoadingForDrawables")
     public void onPlayerPaused(boolean b) {
@@ -408,6 +472,13 @@ public class OverlayService extends Service {
                     closeOverlay();
             }
         }, 60 * 1000);
+    }
+
+    public static int getDominantColor(Bitmap bitmap) {
+        Bitmap newBitmap = Bitmap.createScaledBitmap(bitmap, 1, 1, true);
+        final int color = newBitmap.getPixel(0, 0);
+        newBitmap.recycle();
+        return color;
     }
 
     private View mView;
