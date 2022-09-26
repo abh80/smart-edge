@@ -5,9 +5,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -33,7 +35,9 @@ import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
@@ -44,9 +48,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.NotificationCompat;
@@ -249,8 +255,12 @@ public class OverlayService extends Service {
     public Map<String, MediaController.Callback> callbackMap = new HashMap<>();
     private boolean seekbar_dragging = false;
 
-    @SuppressLint("UseCompatLoadingForDrawables")
-    @RequiresApi(api = Build.VERSION_CODES.R)
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
+    @SuppressLint({"UseCompatLoadingForDrawables", "ClickableViewAccessibility"})
     @Override
     public void onCreate() {
         super.onCreate();
@@ -308,19 +318,46 @@ public class OverlayService extends Service {
             }
         });
         visualizer = mView.findViewById(R.id.visualizer);
-        mView.setOnClickListener(l -> {
-            if (!overlayOpen) return;
-            DisplayMetrics metrics = new DisplayMetrics();
-            mWindowManager.getDefaultDisplay().getMetrics(metrics);
-            if (!expanded) {
-                expanded = true;
-                animateOverlay(500, metrics.widthPixels - 40);
-                animateChild(true, (int) (500 / 2.5));
-            } else {
-                expanded = false;
-                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-                animateChild(false, dpToInt(25));
+
+        Runnable mLongPressed = () -> {
+            if (expanded) {
+                if (mCurrent != null) {
+                    if (mCurrent.getSessionActivity() != null) {
+                        try {
+
+                            mCurrent.getSessionActivity().send(0);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }
             }
+        };
+        mView.setOnTouchListener((view, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (expanded)
+                    mHandler.postDelayed(mLongPressed, ViewConfiguration.getLongPressTimeout());
+            }
+            if ((event.getAction() == MotionEvent.ACTION_UP)) {
+                mHandler.removeCallbacks(mLongPressed);
+            }
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (!overlayOpen) return false;
+                DisplayMetrics metrics = new DisplayMetrics();
+                mWindowManager.getDefaultDisplay().getMetrics(metrics);
+                if (!expanded) {
+                    expanded = true;
+                    animateOverlay(500, metrics.widthPixels - 40);
+                    animateChild(true, (int) (500 / 2.5));
+                } else {
+                    expanded = false;
+                    animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    animateChild(false, dpToInt(25));
+                }
+            }
+            return false;
         });
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
@@ -394,6 +431,10 @@ public class OverlayService extends Service {
 
     public void closeOverlay() {
         if (!overlayOpen) return;
+        if (expanded) {
+            expanded = false;
+            animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
         animateChild(false, 0);
         overlayOpen = false;
     }
@@ -403,7 +444,10 @@ public class OverlayService extends Service {
             callback.onFinish();
             return;
         }
-
+        if (expanded) {
+            expanded = false;
+            animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
         animateChild(false, 0, callback);
         overlayOpen = false;
     }
@@ -440,20 +484,20 @@ public class OverlayService extends Service {
         if (bm == null) return;
         int dc = getDominantColor(bm);
         if (isColorDark(dc)) {
-           dc = lightenColor(dc);
+            dc = lightenColor(dc);
         }
         visualizer.setColor(dc);
     }
 
     private int lightenColor(int colorin) {
         Color color = Color.valueOf(colorin);
-        double fraction = 0.5;
-        float red = (float) (Math.min(255, color.red() + 255 * fraction) / 225f);
-        float green = (float) (Math.min(255, color.green() + 255 * fraction) / 225f);
-        float blue = (float) (Math.min(255, color.blue() + 255 * fraction) / 225f);
+        double fraction = 0.3;
+        float red = (float) (Math.min(255, color.red() * 255f + 255 * fraction) / 225f);
+        float green = (float) (Math.min(255, color.green() * 255f + 255 * fraction) / 225f);
+        float blue = (float) (Math.min(255, color.blue() * 255f + 255 * fraction) / 225f);
         float alpha = color.alpha();
 
-        return Color.valueOf(red , green , blue , alpha).toArgb();
+        return Color.valueOf(red, green, blue, alpha).toArgb();
 
     }
 
@@ -501,7 +545,7 @@ public class OverlayService extends Service {
         Notification notification = notificationBuilder.setOngoing(true)
                 .setContentTitle("Service running")
                 .setContentText("Displaying over other apps")
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.drawable.launcher_foreground)
 
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
