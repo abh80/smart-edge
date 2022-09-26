@@ -72,7 +72,8 @@ public class MediaCallback extends MediaController.Callback {
         super.onPlaybackStateChanged(state);
         if (state == null || mCurrent.getMetadata() == null) return;
         boolean isPlaying2 = state.getState() == PlaybackState.STATE_PLAYING;
-        if (mediaMetadata != null && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE).equals(mCurrent.getMetadata().getString(MediaMetadata.METADATA_KEY_TITLE)) && ctx.overlayOpen) {
+        if (mediaMetadata != null && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE) != null
+                && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE).equals(mCurrent.getMetadata().getString(MediaMetadata.METADATA_KEY_TITLE)) && ctx.overlayOpen) {
             if (ctx.mCurrent != null && ctx.mCurrent.getPackageName().equals(mCurrent.getPackageName())) {
                 if (!isPlaying2) ctx.onPlayerPaused(true);
                 else ctx.onPlayerResume(true);
