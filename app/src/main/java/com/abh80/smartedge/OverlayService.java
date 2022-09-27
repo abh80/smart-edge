@@ -50,6 +50,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -265,6 +266,12 @@ public class OverlayService extends Service {
     public void onCreate() {
         super.onCreate();
         startOnForeground();
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            Intent launch = new Intent(this, OverlayService.class);
+            launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startForegroundService(launch);
+            Runtime.getRuntime().exit(0);
+        });
         mParams = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
