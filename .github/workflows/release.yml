@@ -18,11 +18,15 @@ jobs:
       run: chmod +x ./gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
-    - name: Releasing using Hub
-      uses: ShaunLWM/action-release-debugapk@master
-      env:
-       GITHUB_TOKEN: ${{ secrets.TOKEN }}
-       APP_FOLDER: app
-       RELEASE_TITLE: New build
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.TOKENS }}
+        file: app\build\outputs\apk\release\app-release-unsigned.apk
+        asset_name: app-release.apk
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: "Build  Successful"
+     
