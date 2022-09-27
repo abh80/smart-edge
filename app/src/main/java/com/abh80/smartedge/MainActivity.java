@@ -22,12 +22,9 @@ public class MainActivity extends AppCompatActivity {
         if (!Settings.canDrawOverlays(this) || !Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             startActivity(new Intent(this, PermissionActivity.class));
-            return;
-        }
-        if (!isMyServiceRunning(OverlayService.class)) {
-            startForegroundService(new Intent(this, OverlayService.class));
         }
     }
+
     public boolean isMyServiceRunning(Class<?> serviceClass) {
         // Source : https://stackoverflow.com/a/5921190
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -38,8 +35,16 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (!isMyServiceRunning(OverlayService.class)) {
+            if (Settings.canDrawOverlays(this) && Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                startForegroundService(new Intent(this, OverlayService.class));
+
+            }
+        }
     }
 }
