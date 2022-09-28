@@ -16,7 +16,8 @@ const version = gradleBuild
   const TOKEN = process.env["TOKEN"];
   if (!TOKEN) return core.setFailed("No token was provided, exiting...");
   const octokit = github.getOctokit(TOKEN);
-  const build_path = process.cwd() + "/app/app-release-unsigned.apk";
+  const build_path =
+    process.cwd() + "/app/build/outputs/apk/release/app-release-unsigned.apk";
   const data = await octokit.rest.repos.createRelease({
     owner: "abh80",
     repo: "smart-edge",
