@@ -61,8 +61,8 @@
                         android:id="@+id/temp1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
                         android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
                         android:text="@string/enable_hardware_acceleration"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
                         android:textSize="18sp" />
