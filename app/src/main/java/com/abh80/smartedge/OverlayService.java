@@ -14,6 +14,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -255,6 +256,7 @@ public class OverlayService extends Service {
     public boolean expanded = false;
     public Map<String, MediaController.Callback> callbackMap = new HashMap<>();
     private boolean seekbar_dragging = false;
+    SharedPreferences sharedPreferences;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -272,11 +274,17 @@ public class OverlayService extends Service {
             startForegroundService(launch);
             Runtime.getRuntime().exit(0);
         });
+        sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        if (sharedPreferences.getBoolean("hwd_enabled", false)) {
+            flags |= WindowManager.LayoutParams.FLAGS_CHANGED;
+            Log.d("hk", "e");
+        }
+
         mParams = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-
+                flags,
                 PixelFormat.TRANSLUCENT);
         layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
@@ -350,6 +358,7 @@ public class OverlayService extends Service {
             if ((event.getAction() == MotionEvent.ACTION_UP)) {
                 mHandler.removeCallbacks(mLongPressed);
             }
+
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 if (!overlayOpen) return false;
                 DisplayMetrics metrics = new DisplayMetrics();
@@ -367,6 +376,7 @@ public class OverlayService extends Service {
             return false;
         });
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
+
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
             list.forEach(x -> {
@@ -407,6 +417,7 @@ public class OverlayService extends Service {
     public void onDestroy() {
         super.onDestroy();
         mWindowManager.removeView(mView);
+        Runtime.getRuntime().exit(0);
     }
 
     public Instant last_played;
