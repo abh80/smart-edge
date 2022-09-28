@@ -27,4 +27,4 @@ jobs:
         with:
           node-version: 16
         env:
-          TOKEN: { { secrets.TOKEN } }
+          TOKEN: ${{ secrets.TOKEN }}
