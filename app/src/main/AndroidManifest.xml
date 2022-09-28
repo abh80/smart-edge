@@ -43,6 +43,7 @@
         </service>
         <service
             android:name=".OverlayService"
+            android:process=":remote"
             android:enabled="true"
             android:exported="true" />
 
