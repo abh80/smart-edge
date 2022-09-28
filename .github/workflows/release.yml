@@ -31,7 +31,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Publish Release
         run: node scripts/release.js
-        with:
-          node-version: 16
         env:
           TOKEN: ${{ secrets.TOKEN }}
