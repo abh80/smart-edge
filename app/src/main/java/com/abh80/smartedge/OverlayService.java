@@ -406,6 +406,7 @@ public class OverlayService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mWindowManager.removeView(mView);
     }
 
     public Instant last_played;

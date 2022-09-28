@@ -9,4 +9,5 @@
     <string name="draw_over_other_apps">Draw over other apps</string>
     <string name="notification_access">Notification Access</string>
     <string name="record_audio_from_apps">Record Audio from apps</string>
+    <string name="enable_smart_edge">Enable Smart Edge</string>
 </resources>

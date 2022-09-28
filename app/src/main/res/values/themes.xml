@@ -27,5 +27,7 @@
         <item name="colorPrimaryContainer">@color/md_theme_dark_primaryContainer</item>
         <item name="colorPrimary">@color/md_theme_dark_primary</item>
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
+        <item name="android:statusBarColor">@color/md_theme_dark_background</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
