@@ -1,0 +1,15 @@
+{
+  "name": "smart-edge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/abh80/smart-edge.git",
+  "author": "abh80",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.9.1",
+    "@actions/github": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.23"
+  }
+}

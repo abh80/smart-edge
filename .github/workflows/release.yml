@@ -1,32 +1,30 @@
 name: Build & Publish Debug APK
 
 on:
- push:
-  branches:
-   - master
-   
+  push:
+    branches:
+      - master
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
-    - name: Make Gradle executable
-      run: chmod +x ./gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.TOKEN }}
-        file: app\build\outputs\apk\release\app-release-unsigned.apk
-        asset_name: app-release.apk
-        tag: ${{ github.ref }}
-        overwrite: true
-        body: "Build  Successful"
-     
+      - uses: actions/checkout@v1
+      - name: set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+      - name: check build
+        run: ls app/
+      - name: Publish Release
+        run: node scripts/release.js
+        with:
+          node-version: 16
+        env:
+          TOKEN: { { secrets.TOKEN } }
