@@ -10,8 +10,8 @@ const version = gradleBuild
   .trim()
   .replace("versionName", "")
   .replace(/"/g, "")
+  .trim()
   .toString();
-
 (async () => {
   const TOKEN = process.env["TOKEN"];
   if (!TOKEN) return core.setFailed("No token was provided, exiting...");
