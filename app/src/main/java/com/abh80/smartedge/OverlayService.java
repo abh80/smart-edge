@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -77,21 +78,15 @@ public class OverlayService extends Service {
         public void run() {
             if (!expanded) return;
             if (mCurrent == null) {
-                expanded = false;
-                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
                 closeOverlay();
                 return;
             }
             long elapsed = mCurrent.getPlaybackState().getPosition();
             if (elapsed < 0) {
-                expanded = false;
-                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
                 closeOverlay();
                 return;
             }
             if (mCurrent.getMetadata() == null) {
-                expanded = false;
-                animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
                 closeOverlay();
                 return;
             }
@@ -112,18 +107,31 @@ public class OverlayService extends Service {
 
     public String current_package_name = "";
 
+    private void expandOverlay() {
+        expanded = true;
+        DisplayMetrics metrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        animateOverlay(500, metrics.widthPixels - 40);
+    }
+
+    private void shrinkOverlay() {
+        expanded = false;
+        animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
     private void animateOverlay(int h, int w) {
-        ValueAnimator height_anim = ValueAnimator.ofInt(mParams.height, h);
+        ViewGroup.LayoutParams params = mView.getLayoutParams();
+        ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
         height_anim.setDuration(200);
         height_anim.addUpdateListener(valueAnimator -> {
-            mParams.height = (int) valueAnimator.getAnimatedValue();
-            mWindowManager.updateViewLayout(mView, mParams);
+            params.height = (int) valueAnimator.getAnimatedValue();
+            mWindowManager.updateViewLayout(mView, params);
         });
         ValueAnimator width_anim = ValueAnimator.ofInt(mView.getMeasuredWidth(), w);
         width_anim.setDuration(200);
         width_anim.addUpdateListener(v2 -> {
-            mParams.width = (int) v2.getAnimatedValue();
-            mWindowManager.updateViewLayout(mView, mParams);
+            params.width = (int) v2.getAnimatedValue();
+            mWindowManager.updateViewLayout(mView, params);
         });
         width_anim.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -264,6 +272,15 @@ public class OverlayService extends Service {
 
     SharedPreferences sharedPreferences;
 
+    private WindowManager.LayoutParams getParams(int width, int height, int extFlags) {
+        return new WindowManager.LayoutParams(
+                width, height,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                extFlags,
+                PixelFormat.TRANSLUCENT);
+    }
+
+
     @SuppressLint({"UseCompatLoadingForDrawables", "ClickableViewAccessibility"})
     @Override
     public void onCreate() {
@@ -280,11 +297,7 @@ public class OverlayService extends Service {
         if (sharedPreferences.getBoolean("hwd_enabled", false)) {
             flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         }
-        mParams = new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, 100,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                flags,
-                PixelFormat.TRANSLUCENT);
+        mParams = getParams(ViewGroup.LayoutParams.WRAP_CONTENT, 100, flags);
         layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
         seekBar = mView.findViewById(R.id.progressBar);
@@ -363,11 +376,10 @@ public class OverlayService extends Service {
                 mWindowManager.getDefaultDisplay().getMetrics(metrics);
                 if (!expanded) {
                     expanded = true;
-                    animateOverlay(500, metrics.widthPixels - 40);
+                    expandOverlay();
                     animateChild(true, (int) (500 / 2.5));
                 } else {
-                    expanded = false;
-                    animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    shrinkOverlay();
                     animateChild(false, dpToInt(25));
                 }
             }
@@ -447,8 +459,7 @@ public class OverlayService extends Service {
     public void closeOverlay() {
         if (!overlayOpen) return;
         if (expanded) {
-            expanded = false;
-            animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+            shrinkOverlay();
         }
         animateChild(false, 0);
         overlayOpen = false;
@@ -460,8 +471,7 @@ public class OverlayService extends Service {
             return;
         }
         if (expanded) {
-            expanded = false;
-            animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+            shrinkOverlay();
         }
         animateChild(false, 0, callback);
         overlayOpen = false;
