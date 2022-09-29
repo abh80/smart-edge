@@ -14,6 +14,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -261,6 +262,8 @@ public class OverlayService extends Service {
         return START_STICKY;
     }
 
+    SharedPreferences sharedPreferences;
+
     @SuppressLint({"UseCompatLoadingForDrawables", "ClickableViewAccessibility"})
     @Override
     public void onCreate() {
@@ -272,11 +275,15 @@ public class OverlayService extends Service {
             startForegroundService(launch);
             Runtime.getRuntime().exit(0);
         });
+        sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        if (sharedPreferences.getBoolean("hwd_enabled", false)) {
+            flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+        }
         mParams = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, 100,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-
+                flags,
                 PixelFormat.TRANSLUCENT);
         layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
