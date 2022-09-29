@@ -32,6 +32,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             sharedPreferences.edit().putBoolean("enabled", enable_btn.isChecked()).apply();
         });
         enable_btn.setChecked(sharedPreferences.getBoolean("enabled", false));
+        MaterialSwitch enable_btn2 = findViewById(R.id.enable_switch2);
+        enable_btn2.setOnClickListener(l -> {
+            sharedPreferences.edit().putBoolean("hwd_enabled", enable_btn2.isChecked()).apply();
+        });
+        enable_btn2.setChecked(sharedPreferences.getBoolean("hwd_enabled", false));
     }
 
     public boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -69,8 +74,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
             }
         } else {
-            if (!sharedPreferences.getBoolean("enabled", false)) {
-                stopService(new Intent(this, OverlayService.class));
+            stopService(new Intent(this, OverlayService.class));
+            if (sharedPreferences.getBoolean("enabled", false)) {
+                startForegroundService(new Intent(this, OverlayService.class));
             }
         }
     }
