@@ -2,15 +2,12 @@ name: Build & Publish Debug APK
 
 on:
   push:
-    branches:
-      - master
+    tags:
+      - '*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [15.x]
     steps:
       - uses: actions/checkout@v1
       - name: set up JDK 11
@@ -23,15 +20,10 @@ jobs:
         run: ./gradlew build
       - name: Build Release APK
         run: ./gradlew assembleRelease
-      - name: check build
-        run: ls app/
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install Node Modules
-        run: npm install
-      - name: Publish Release
-        run: node scripts/release.js
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.TOKEN}}
+          file: build/outputs/apk/release/app-release-unsigned.apk
+          asset_name: release-app.apk
+          tag: ${{ github.ref }}
