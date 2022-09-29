@@ -15,12 +15,6 @@ public class BootReceiver extends BroadcastReceiver {
     @SuppressLint("UnsafeProtectedBroadcastReceiver")
     @Override
     public void onReceive(Context context, Intent intent) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
-        if (!Settings.canDrawOverlays(context) || !Settings.Secure.getString(context.getContentResolver(), "enabled_notification_listeners").contains(context.getApplicationContext().getPackageName())
-                || ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || !sharedPreferences.getBoolean("enabled", false)) {
-            return;
-        }
-        Intent intent1 = new Intent(context, OverlayService.class);
-        context.startForegroundService(intent1);
+        // useless at the moment lol
     }
 }

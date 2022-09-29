@@ -1,5 +1,6 @@
 package com.abh80.smartedge;
 
+import android.accessibilityservice.AccessibilityService;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
@@ -42,6 +43,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -69,7 +71,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public class OverlayService extends Service {
+public class OverlayService extends AccessibilityService {
     private SeekBar seekBar;
     private TextView elapsedView;
     private TextView remainingView;
@@ -99,11 +101,16 @@ public class OverlayService extends Service {
     };
     private ImageView pause_play;
 
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
+
     }
+
+    @Override
+    public void onInterrupt() {
+
+    }
+
 
     public String current_package_name = "";
 
@@ -275,21 +282,16 @@ public class OverlayService extends Service {
     private WindowManager.LayoutParams getParams(int width, int height, int extFlags) {
         return new WindowManager.LayoutParams(
                 width, height,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
                 extFlags,
                 PixelFormat.TRANSLUCENT);
     }
 
-
     @SuppressLint({"UseCompatLoadingForDrawables", "ClickableViewAccessibility"})
     @Override
-    public void onCreate() {
-        super.onCreate();
-        startOnForeground();
+    public void onServiceConnected() {
+        super.onServiceConnected();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            Intent launch = new Intent(this, OverlayService.class);
-            launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startForegroundService(launch);
             Runtime.getRuntime().exit(0);
         });
         sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
@@ -426,6 +428,7 @@ public class OverlayService extends Service {
     public void onDestroy() {
         super.onDestroy();
         mWindowManager.removeView(mView);
+        Runtime.getRuntime().exit(0);
     }
 
     public Instant last_played;

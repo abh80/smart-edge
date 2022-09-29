@@ -15,7 +15,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -39,50 +39,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         enable_btn2.setChecked(sharedPreferences.getBoolean("hwd_enabled", false));
     }
 
-    public boolean isMyServiceRunning(Class<?> serviceClass) {
-        // Source : https://stackoverflow.com/a/5921190
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private void init() {
         if (sharedPreferences == null) {
             sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
-            sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        init();
-        handleOverlay();
-    }
-
-    private void handleOverlay() {
-        if (!isMyServiceRunning(OverlayService.class)) {
-            if (Settings.canDrawOverlays(this) && Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                if (sharedPreferences.getBoolean("enabled", false)) {
-                    startForegroundService(new Intent(this, OverlayService.class));
-                }
-
-            }
-        } else {
-            stopService(new Intent(this, OverlayService.class));
-            if (sharedPreferences.getBoolean("enabled", false)) {
-                startForegroundService(new Intent(this, OverlayService.class));
-            }
-        }
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        handleOverlay();
-    }
 }
