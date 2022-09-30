@@ -20,7 +20,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:checkable="false"
-                android:clickable="false"
+                android:clickable="true"
+                android:id="@+id/enable_switch"
                 android:elevation="10dp"
                 android:paddingHorizontal="10dp"
                 app:cardCornerRadius="20dp">
@@ -37,16 +38,8 @@
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:layout_marginEnd="10dp"
-                        android:layout_toStartOf="@+id/enable_switch"
                         android:text="@string/enable_smart_edge"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
-
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/enable_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
