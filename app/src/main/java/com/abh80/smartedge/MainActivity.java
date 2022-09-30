@@ -25,7 +25,7 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         init();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (!isAccessibilityServiceEnabled(this, OverlayService.class) || !Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())
+        if (!Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             startActivity(new Intent(this, PermissionActivity.class));
         }
@@ -46,30 +46,43 @@ public class MainActivity extends AppCompatActivity {
         MaterialSwitch enable_btn2 = findViewById(R.id.enable_switch2);
         enable_btn2.setOnClickListener(l -> {
             sharedPreferences.edit().putBoolean("hwd_enabled", enable_btn2.isChecked()).apply();
+            Log.d("kok", String.valueOf(enable_btn2.isChecked()));
         });
         enable_btn2.setChecked(sharedPreferences.getBoolean("hwd_enabled", false));
-        sharedPreferences.registerOnSharedPreferenceChangeListener((s, _v) -> {
-            sendBroadcast(new Intent(getPackageName() + ".SETTINGS_CHANGED"));
-        });
     }
 
-    public static boolean isAccessibilityServiceEnabled(Context context, Class<? extends AccessibilityService> service) {
-        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        List<AccessibilityServiceInfo> enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
 
-        for (AccessibilityServiceInfo enabledService : enabledServices) {
-            ServiceInfo enabledServiceInfo = enabledService.getResolveInfo().serviceInfo;
-            if (enabledServiceInfo.packageName.equals(context.getPackageName()) && enabledServiceInfo.name.equals(service.getName()))
-                return true;
-        }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
 
-        return false;
     }
 
     private void init() {
         if (sharedPreferences == null) {
+
             sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        Intent intent = new Intent(getPackageName() + ".SETTINGS_CHANGED");
+        sharedPreferences.getAll().forEach((key, value) -> {
+            intent.putExtra(key, (boolean) value);
+        });
+        sendBroadcast(intent);
+    }
 }

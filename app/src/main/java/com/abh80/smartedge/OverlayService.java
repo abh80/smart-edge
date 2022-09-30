@@ -3,38 +3,31 @@ package com.abh80.smartedge;
 import android.accessibilityservice.AccessibilityService;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.MediaMetadata;
-import android.media.MediaRecorder;
-import android.media.audiofx.Visualizer;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
-import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -42,22 +35,14 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.NotificationCompat;
@@ -70,11 +55,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class OverlayService extends AccessibilityService {
     private SeekBar seekBar;
     private TextView elapsedView;
     private TextView remainingView;
+    private boolean is_hwd_enabled = false;
+
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mView != null && mWindowManager != null)
+                mWindowManager.removeView(mView);
+            is_hwd_enabled = intent.getBooleanExtra("hwd_enabled", false);
+            init();
+
+        }
+    };
+
     private final Runnable r = new Runnable() {
         @Override
         public void run() {
@@ -119,11 +119,13 @@ public class OverlayService extends AccessibilityService {
         DisplayMetrics metrics = new DisplayMetrics();
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         animateOverlay(500, metrics.widthPixels - 40);
+        animateChild(true, (int) (500 / 2.5));
     }
 
     private void shrinkOverlay() {
         expanded = false;
         animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+        animateChild(false, dpToInt(25));
     }
 
     private void animateOverlay(int h, int w) {
@@ -287,20 +289,48 @@ public class OverlayService extends AccessibilityService {
                 PixelFormat.TRANSLUCENT);
     }
 
-    @SuppressLint({"UseCompatLoadingForDrawables", "ClickableViewAccessibility"})
+    private float y1, y2;
+    static final int MIN_DISTANCE = 150;
+    private final AtomicLong press_start = new AtomicLong();
+
     @Override
     public void onServiceConnected() {
         super.onServiceConnected();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             Runtime.getRuntime().exit(0);
         });
+        registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".SETTINGS_CHANGED"));
+
         sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        is_hwd_enabled = sharedPreferences.getBoolean("hwd_enabled", false);
+        mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
+        mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+        init();
+
+        mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
+            list.forEach(x -> {
+                if (callbackMap.get(x.getPackageName()) != null) return;
+                MediaCallback c = new MediaCallback(x, mView, this);
+                callbackMap.put(x.getPackageName(), c);
+                x.registerCallback(c);
+            });
+        }, new ComponentName(this, NotiService.class));
+        mediaSessionManager.getActiveSessions(new ComponentName(this, NotiService.class)).forEach(x -> {
+            if (callbackMap.get(x.getPackageName()) != null) return;
+            MediaCallback c = new MediaCallback(x, mView, this);
+            callbackMap.put(x.getPackageName(), c);
+            x.registerCallback(c);
+        });
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void init() {
         int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        if (sharedPreferences.getBoolean("hwd_enabled", false)) {
+        if (is_hwd_enabled) {
             flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         }
-        mParams = getParams(ViewGroup.LayoutParams.WRAP_CONTENT, 100, flags);
-        layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        WindowManager.LayoutParams mParams = getParams(ViewGroup.LayoutParams.WRAP_CONTENT, 100, flags);
+        LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
         seekBar = mView.findViewById(R.id.progressBar);
 
@@ -349,60 +379,10 @@ public class OverlayService extends AccessibilityService {
         visualizer = mView.findViewById(R.id.visualizer);
 
         Runnable mLongPressed = () -> {
-            if (expanded) {
-                if (mCurrent != null) {
-                    if (mCurrent.getSessionActivity() != null) {
-                        try {
-
-                            mCurrent.getSessionActivity().send(0);
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                }
+            if (!expanded && overlayOpen) {
+                expandOverlay();
             }
         };
-        mView.setOnTouchListener((view, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                if (expanded)
-                    mHandler.postDelayed(mLongPressed, ViewConfiguration.getLongPressTimeout());
-            }
-            if ((event.getAction() == MotionEvent.ACTION_UP)) {
-                mHandler.removeCallbacks(mLongPressed);
-            }
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (!overlayOpen) return false;
-                DisplayMetrics metrics = new DisplayMetrics();
-                mWindowManager.getDefaultDisplay().getMetrics(metrics);
-                if (!expanded) {
-                    expanded = true;
-                    expandOverlay();
-                    animateChild(true, (int) (500 / 2.5));
-                } else {
-                    shrinkOverlay();
-                    animateChild(false, dpToInt(25));
-                }
-            }
-            return false;
-        });
-        mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
-        mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
-        mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
-            list.forEach(x -> {
-                if (callbackMap.get(x.getPackageName()) != null) return;
-                MediaCallback c = new MediaCallback(x, mView, this);
-                callbackMap.put(x.getPackageName(), c);
-                x.registerCallback(c);
-            });
-        }, new ComponentName(this, NotiService.class));
-        mediaSessionManager.getActiveSessions(new ComponentName(this, NotiService.class)).forEach(x -> {
-            if (callbackMap.get(x.getPackageName()) != null) return;
-            MediaCallback c = new MediaCallback(x, mView, this);
-            callbackMap.put(x.getPackageName(), c);
-            x.registerCallback(c);
-        });
         try {
 
             if (mView.getWindowToken() == null) {
@@ -413,6 +393,39 @@ public class OverlayService extends AccessibilityService {
         } catch (Exception e) {
             Log.d("Error1", e.toString());
         }
+        mView.setOnTouchListener((view, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (!expanded)
+                    mHandler.postDelayed(mLongPressed, ViewConfiguration.getLongPressTimeout());
+                press_start.set(Instant.now().toEpochMilli());
+                y1 = event.getY();
+            }
+
+            if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+                if (expanded) shrinkOverlay();
+            }
+            if ((event.getAction() == MotionEvent.ACTION_UP)) {
+                mHandler.removeCallbacks(mLongPressed);
+                y2 = event.getY();
+                float deltaY = y2 - y1;
+                if (-deltaY > MIN_DISTANCE) {
+                    shrinkOverlay();
+                    return false;
+                }
+                if (expanded) return false;
+                if (Instant.now().toEpochMilli() < press_start.get() + ViewConfiguration.getLongPressTimeout()) {
+                    if (mCurrent != null && mCurrent.getSessionActivity() != null) {
+                        try {
+                            mCurrent.getSessionActivity().send(0);
+                        } catch (PendingIntent.CanceledException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+
 
     }
 
@@ -427,6 +440,7 @@ public class OverlayService extends AccessibilityService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
         mWindowManager.removeView(mView);
         Runtime.getRuntime().exit(0);
     }
@@ -554,30 +568,8 @@ public class OverlayService extends AccessibilityService {
     }
 
     private View mView;
-    private WindowManager.LayoutParams mParams;
     private WindowManager mWindowManager;
-    private LayoutInflater layoutInflater;
     public MediaSessionManager mediaSessionManager;
-    DisplayMetrics metrics;
 
-    private void startOnForeground() {
-        String NOTIFICATION_CHANNEL_ID = "example.permanence";
-        String channelName = "Background Service";
-        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_MIN);
 
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        assert manager != null;
-        manager.createNotificationChannel(chan);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setContentTitle("Service running")
-                .setContentText("Displaying over other apps")
-                .setSmallIcon(R.drawable.launcher_foreground)
-
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .build();
-        startForeground(2, notification);
-    }
 }
