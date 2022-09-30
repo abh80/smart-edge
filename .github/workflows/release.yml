@@ -24,6 +24,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.TOKEN}}
-          file: build/outputs/apk/release/app-release-unsigned.apk
+          file: app/build/outputs/apk/release/app-release-unsigned.apk
           asset_name: release-app.apk
           tag: ${{ github.ref }}
