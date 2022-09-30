@@ -11,4 +11,5 @@
     <string name="record_audio_from_apps">Record Audio from apps</string>
     <string name="enable_smart_edge">Enable Smart Edge</string>
     <string name="enable_hardware_acceleration">Enable Hardware Acceleration</string>
+    <string name="access_description">Turn on to let the app draw over status bar</string>
 </resources>
