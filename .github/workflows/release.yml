@@ -25,6 +25,9 @@ jobs:
         run: ./gradlew build
       - name: Build Release APK
         run: ./gradlew assembleRelease
+        env:
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
