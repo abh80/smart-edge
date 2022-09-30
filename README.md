@@ -1,4 +1,4 @@
-# Smart Edge (Early Access)
+# Smart Edge (Early Access) [![Build & Publish Debug APK](https://github.com/abh80/smart-edge/actions/workflows/release.yml/badge.svg)](https://github.com/abh80/smart-edge/actions/workflows/release.yml)
 Alternative to dynamic island which shows your music status under the pinhole camera.
 
 
