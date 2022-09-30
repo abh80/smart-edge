@@ -19,14 +19,6 @@ public class PermissionActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_permission);
-        findViewById(R.id.draw_over_other_apps).setOnClickListener(l -> {
-            if (Settings.canDrawOverlays(this)) {
-                Toast.makeText(this, "This permission is already enabled", Toast.LENGTH_LONG).show();
-                return;
-            }
-            startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())));
-            Toast.makeText(this, "Please select Smart Edge", Toast.LENGTH_LONG).show();
-        });
         findViewById(R.id.notification_access).setOnClickListener(l -> {
             if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
                 Toast.makeText(this, "This permission is already enabled", Toast.LENGTH_LONG).show();
@@ -55,10 +47,6 @@ public class PermissionActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         int checks = 0;
-        if (Settings.canDrawOverlays(this)) {
-            ((CheckBox) findViewById(R.id.draw_over_other_apps_checkbox)).setChecked(true);
-            checks++;
-        }
         if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
             ((CheckBox) findViewById(R.id.notification_access_checkbox)).setChecked(true);
             checks++;
@@ -67,7 +55,7 @@ public class PermissionActivity extends AppCompatActivity {
             ((CheckBox) findViewById(R.id.record_audio_checkbox)).setChecked(true);
             checks++;
         }
-        if (checks >= 3) {
+        if (checks >= 2) {
             finish();
         }
     }
