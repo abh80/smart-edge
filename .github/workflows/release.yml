@@ -1,13 +1,13 @@
 name: Build & Publish Debug APK
 
-on:
-  push:
-    tags:
-      - "*"
+on: workflow_dispatch
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [15.x]
     steps:
       - uses: actions/checkout@v1
       - name: set up JDK 11
@@ -31,10 +31,21 @@ jobs:
         env:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
-          repo_token: ${{ secrets.TOKEN }}
-          file: app/build/outputs/apk/release/app-release.apk
-          asset_name: release-app.apk
-          tag: ${{ github.ref }}
+          node-version: ${{ matrix.node-version }}
+      - name: Publish Release
+        run: node scripts/release.js
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+      - name: Commit
+        run: |
+          git config --global user.name 'Github Actions'
+          git config --global user.email 'action@github.com'
+          git commit -A "publish new build"
+      - name: Push to Github
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.TOKEN }}
+          force: true
