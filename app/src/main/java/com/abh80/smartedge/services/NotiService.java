@@ -1,4 +1,4 @@
-package com.abh80.smartedge;
+package com.abh80.smartedge.services;
 
 import android.service.notification.NotificationListenerService;
 

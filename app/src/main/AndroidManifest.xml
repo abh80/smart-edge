@@ -21,7 +21,7 @@
         android:theme="@style/Theme.SmartEdge"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -29,11 +29,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PermissionActivity"
+            android:name=".activities.PermissionActivity"
             android:exported="false" />
 
         <service
-            android:name=".NotiService"
+            android:name=".services.NotiService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
@@ -42,7 +42,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".OverlayService"
+            android:name=".services.OverlayService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

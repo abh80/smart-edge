@@ -42,7 +42,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="RtlSymmetry,UselessLeaf">
 
-        <com.abh80.smartedge.SongVisualizer
+        <com.abh80.smartedge.plugins.MediaSession.SongVisualizer
             android:id="@+id/visualizer"
             android:focusable="false"
             android:clickable="false"

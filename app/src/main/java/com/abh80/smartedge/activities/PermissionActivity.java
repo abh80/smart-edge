@@ -1,4 +1,4 @@
-package com.abh80.smartedge;
+package com.abh80.smartedge.activities;
 
 import android.Manifest;
 import android.content.Intent;
@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
+import com.abh80.smartedge.R;
 
 public class PermissionActivity extends AppCompatActivity {
     @Override

@@ -1,30 +1,17 @@
-package com.abh80.smartedge;
+package com.abh80.smartedge.plugins.MediaSession;
 
-import android.animation.ValueAnimator;
-import android.content.ComponentName;
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.PlaybackState;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.abh80.smartedge.R;
+import com.abh80.smartedge.services.OverlayService;
 import com.google.android.material.imageview.ShapeableImageView;
-
-import java.util.List;
-import java.util.Objects;
 
 public class MediaCallback extends MediaController.Callback {
     public MediaCallback(MediaController mCurrent, View view, OverlayService context) {

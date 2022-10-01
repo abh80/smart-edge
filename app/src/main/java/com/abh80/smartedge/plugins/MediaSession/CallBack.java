@@ -1,4 +1,4 @@
-package com.abh80.smartedge;
+package com.abh80.smartedge.plugins.MediaSession;
 
 public class CallBack {
 
