@@ -4,19 +4,14 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.PlaybackState;
-import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.abh80.smartedge.R;
-import com.abh80.smartedge.services.OverlayService;
-import com.google.android.material.imageview.ShapeableImageView;
+import com.abh80.smartedge.CallBack;
 
 public class MediaCallback extends MediaController.Callback {
-    public MediaCallback(MediaController mCurrent, View view, OverlayService context) {
+    public MediaCallback(MediaController mCurrent, MediaSessionPlugin context) {
         this.mCurrent = mCurrent;
-        this.mView = view;
         this.ctx = context;
         try {
             isPlaying = mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING;
@@ -26,8 +21,7 @@ public class MediaCallback extends MediaController.Callback {
         }
     }
 
-    private final OverlayService ctx;
-    private final View mView;
+    private final MediaSessionPlugin ctx;
     private final MediaController mCurrent;
     private MediaMetadata mediaMetadata;
     private boolean isPlaying = true;
@@ -40,15 +34,12 @@ public class MediaCallback extends MediaController.Callback {
         if (b == null) {
             return;
         }
-        ShapeableImageView imageView = mView.findViewById(R.id.cover);
-        imageView.setImageBitmap(b);
+//        ShapeableImageView imageView = mView.findViewById(R.id.cover);
+//        imageView.setImageBitmap(b);
         String title = mediaMetadata.getText(MediaMetadata.METADATA_KEY_TITLE).toString();
         String artist = mediaMetadata.getString(MediaMetadata.METADATA_KEY_ARTIST);
-        TextView titleView = mView.findViewById(R.id.title);
-        TextView artistView = mView.findViewById(R.id.artist_subtitle);
-        titleView.setText(title);
-        artistView.setText(artist);
-        ctx.openOverLay(mCurrent.getPackageName());
+        ctx.queueUpdate(new UpdateQueueStruct(artist, title, b));
+        ctx.openOverlay(mCurrent.getPackageName());
         ctx.mCurrent = mCurrent;
         ctx.onPlayerResume(false);
     }
@@ -60,7 +51,7 @@ public class MediaCallback extends MediaController.Callback {
         if (state == null || mCurrent.getMetadata() == null) return;
         boolean isPlaying2 = state.getState() == PlaybackState.STATE_PLAYING;
         if (mediaMetadata != null && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE) != null
-                && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE).equals(mCurrent.getMetadata().getString(MediaMetadata.METADATA_KEY_TITLE)) && ctx.overlayOpen) {
+                && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE).equals(mCurrent.getMetadata().getString(MediaMetadata.METADATA_KEY_TITLE)) && ctx.overlayOpen()) {
             if (ctx.mCurrent != null && ctx.mCurrent.getPackageName().equals(mCurrent.getPackageName())) {
                 if (!isPlaying2) ctx.onPlayerPaused(true);
                 else ctx.onPlayerResume(true);
