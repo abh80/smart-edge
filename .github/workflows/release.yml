@@ -1,4 +1,4 @@
-name: Build & Publish Debug APK
+name: Build & Publish APK
 
 on: workflow_dispatch
 
