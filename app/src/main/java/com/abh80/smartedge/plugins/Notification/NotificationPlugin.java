@@ -4,11 +4,17 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,23 +29,34 @@ import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.OverlayService;
+import com.abh80.smartedge.utils.NotificationHolderClass;
 import com.google.android.material.imageview.ShapeableImageView;
 
 
 public class NotificationPlugin extends BasePlugin {
-    private final String TAG = getClass().getSimpleName();
     private View mView;
     private OverlayService context;
+    private NotificationManager manager;
 
     @Override
     public String getID() {
         return "NotificationPlugin";
     }
 
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("kek", "got");
+        }
+    };
+
     @Override
     public void onCreate(OverlayService context) {
         this.context = context;
         mHandler = new Handler(context.getMainLooper());
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(context.getPackageName() + ".NOTIFICATION_POSTED");
+        context.registerReceiver(broadcastReceiver, filter);
     }
 
     NotificationMeta meta;
@@ -92,7 +109,7 @@ public class NotificationPlugin extends BasePlugin {
 
     private void update() {
         ShapeableImageView imageView = mView.findViewById(R.id.cover);
-        if (overlayOpen && mView != null) {
+        if (overlayOpen && mView != null && !expanded) {
             closeOverlay(new CallBack() {
                 @Override
                 public void onFinish() {
@@ -139,6 +156,7 @@ public class NotificationPlugin extends BasePlugin {
 
     @Override
     public void onDestroy() {
+        context.unregisterReceiver(broadcastReceiver);
     }
 
     private Handler mHandler;

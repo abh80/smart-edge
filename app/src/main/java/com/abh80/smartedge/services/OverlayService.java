@@ -4,7 +4,6 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.LayoutTransition;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -250,7 +249,6 @@ public class OverlayService extends AccessibilityService {
         View view = binded_plugin.onBind();
         View replace = mView.findViewById(R.id.binded);
         ViewGroup.LayoutParams params = mView.getLayoutParams();
-        ((ViewGroup) mView).getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
         if (replace == null) {
             ((ViewGroup) mView).addView(view);
             ConstraintSet constraintSet = new ConstraintSet();
