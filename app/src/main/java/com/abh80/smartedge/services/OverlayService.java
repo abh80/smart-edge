@@ -1,8 +1,10 @@
 package com.abh80.smartedge.services;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.LayoutTransition;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -35,9 +37,11 @@ import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.MediaSession.MediaSessionPlugin;
+import com.abh80.smartedge.plugins.Notification.NotificationPlugin;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -62,7 +66,7 @@ public class OverlayService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
-
+        plugins.forEach(x -> x.onEvent(accessibilityEvent));
     }
 
     @Override
@@ -102,14 +106,21 @@ public class OverlayService extends AccessibilityService {
     public void onServiceConnected() {
         super.onServiceConnected();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            throwable.printStackTrace();
             Runtime.getRuntime().exit(0);
         });
+        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
+        info.eventTypes = AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED;
+        info.notificationTimeout = 100;
+        info.feedbackType = AccessibilityEvent.TYPES_ALL_MASK;
+        setServiceInfo(info);
         registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".SETTINGS_CHANGED"));
 
         sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         is_hwd_enabled = sharedPreferences.getBoolean("hwd_enabled", false);
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         plugins.add(new MediaSessionPlugin());
+        plugins.add(new NotificationPlugin());
         init();
     }
 
@@ -119,7 +130,7 @@ public class OverlayService extends AccessibilityService {
         if (is_hwd_enabled) {
             flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         }
-        WindowManager.LayoutParams mParams = getParams(ViewGroup.LayoutParams.WRAP_CONTENT, 100, flags);
+        WindowManager.LayoutParams mParams = getParams(minWidth, 100, flags);
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
         mParams.gravity = Gravity.TOP | Gravity.CENTER;
@@ -154,7 +165,8 @@ public class OverlayService extends AccessibilityService {
                     shrinkOverlay();
                     return false;
                 } else {
-                    if (binded_plugin != null) binded_plugin.onClick();
+                    if (press_start.get() + ViewConfiguration.getLongPressTimeout() > Instant.now().toEpochMilli())
+                        if (binded_plugin != null) binded_plugin.onClick();
                 }
 
             }
@@ -168,7 +180,9 @@ public class OverlayService extends AccessibilityService {
 
     public void enqueue(BasePlugin plugin) {
         if (!queued.contains(plugin.getID())) {
-            queued.add(plugin.getID());
+            if (binded_plugin != null && plugins.indexOf(plugin) < plugins.indexOf(binded_plugin)) {
+                queued.add(0, plugin.getID());
+            } else queued.add(plugin.getID());
         }
         bindPlugin();
     }
@@ -182,13 +196,13 @@ public class OverlayService extends AccessibilityService {
     public void animateOverlay(int h, int w, boolean expanded, CallBack callBackStart, CallBack callBackEnd) {
         ViewGroup.LayoutParams params = mView.getLayoutParams();
         ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
-        height_anim.setDuration(200);
+        height_anim.setDuration(300);
         height_anim.addUpdateListener(valueAnimator -> {
             params.height = (int) valueAnimator.getAnimatedValue();
             mWindowManager.updateViewLayout(mView, params);
         });
         ValueAnimator width_anim = ValueAnimator.ofInt(mView.getMeasuredWidth(), w);
-        width_anim.setDuration(200);
+        width_anim.setDuration(300);
         width_anim.addUpdateListener(v2 -> {
             params.width = (int) v2.getAnimatedValue();
             mWindowManager.updateViewLayout(mView, params);
@@ -207,22 +221,23 @@ public class OverlayService extends AccessibilityService {
                 callBackEnd.onFinish();
             }
         });
-        if (expanded) {
-            width_anim.setInterpolator(new DecelerateInterpolator());
-            height_anim.setInterpolator(new DecelerateInterpolator());
-        } else {
-            width_anim.setInterpolator(new AccelerateInterpolator());
-            height_anim.setInterpolator(new AccelerateInterpolator());
-        }
         width_anim.start();
         height_anim.start();
     }
 
+    private int minWidth = 200;
+
     private void closeOverlay() {
-        View replace = mView.findViewById(R.id.binded);
-        if (replace == null) return;
-        ViewGroup parent = (ViewGroup) replace.getParent();
-        parent.removeView(replace);
+        animateOverlay(100, minWidth, false, new CallBack(), new CallBack() {
+            @Override
+            public void onFinish() {
+                super.onFinish();
+                View replace = mView.findViewById(R.id.binded);
+                if (replace == null) return;
+                ((ViewGroup) mView).removeView(replace);
+            }
+        });
+
     }
 
     private void bindPlugin() {
@@ -239,6 +254,8 @@ public class OverlayService extends AccessibilityService {
         binded_plugin = optionalBasePlugin.get();
         View view = binded_plugin.onBind();
         View replace = mView.findViewById(R.id.binded);
+        ViewGroup.LayoutParams params = mView.getLayoutParams();
+        ((ViewGroup) mView).getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
         if (replace == null) {
             ((ViewGroup) mView).addView(view);
             ConstraintSet constraintSet = new ConstraintSet();
@@ -246,6 +263,9 @@ public class OverlayService extends AccessibilityService {
             constraintSet.connect(view.getId(), ConstraintSet.TOP, mView.getId(), ConstraintSet.TOP, 0);
             constraintSet.connect(view.getId(), ConstraintSet.BOTTOM, mView.getId(), ConstraintSet.BOTTOM, 0);
             constraintSet.applyTo((ConstraintLayout) mView);
+            params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            mWindowManager.updateViewLayout(mView, params);
+            binded_plugin.onBindComplete();
             return;
         }
         ViewGroup parent = (ViewGroup) replace.getParent();
@@ -256,7 +276,9 @@ public class OverlayService extends AccessibilityService {
         constraintSet.connect(view.getId(), ConstraintSet.TOP, mView.getId(), ConstraintSet.TOP, 0);
         constraintSet.connect(view.getId(), ConstraintSet.BOTTOM, mView.getId(), ConstraintSet.BOTTOM, 0);
         constraintSet.applyTo((ConstraintLayout) mView);
-
+        params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        mWindowManager.updateViewLayout(mView, params);
+        binded_plugin.onBindComplete();
     }
 
     @Override

@@ -90,7 +90,7 @@ public class MediaCallback extends MediaController.Callback {
             ctx.callbackMap.remove(mCurrent.getPackageName());
             ctx.mCurrent = null;
         }
-        ctx.shouldRemoveOverlay();
+        ctx.closeOverlay();
 
     }
 }

@@ -1,6 +1,7 @@
 package com.abh80.smartedge.plugins;
 
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 
 import com.abh80.smartedge.services.OverlayService;
 
@@ -20,4 +21,12 @@ public abstract class BasePlugin {
     public abstract void onCollapse();
 
     public abstract void onClick();
+
+    public abstract String[] permissionsRequired();
+
+    public void onEvent(AccessibilityEvent event) {
+    }
+
+    public void onBindComplete() {
+    };
 }

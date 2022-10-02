@@ -210,7 +210,6 @@ public class MediaSessionPlugin extends BasePlugin {
 
     public void shouldRemoveOverlay() {
         if (getActiveCurrent(mediaSessionManager.getActiveSessions(new ComponentName(ctx, NotiService.class))) == null) {
-            closeOverlay();
             ctx.dequeue(this);
         }
     }
@@ -228,7 +227,7 @@ public class MediaSessionPlugin extends BasePlugin {
         seekBar = mView.findViewById(R.id.progressBar);
         elapsedView = mView.findViewById(R.id.elapsed);
         remainingView = mView.findViewById(R.id.remaining);
-        mView.findViewById(R.id.blank_space).setMinimumWidth(200);
+        mView.findViewById(R.id.blank_space).setMinimumWidth(300);
         pause_play = mView.findViewById(R.id.pause_play);
         ImageView next = mView.findViewById(R.id.next_play);
         ImageView back = mView.findViewById(R.id.back_play);
@@ -373,6 +372,11 @@ public class MediaSessionPlugin extends BasePlugin {
         }
     }
 
+    @Override
+    public String[] permissionsRequired() {
+        return null;
+    }
+
 
     public void queueUpdate(UpdateQueueStruct queueStruct) {
         ctx.enqueue(this);
@@ -389,7 +393,7 @@ public class MediaSessionPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = visualizer;
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(200);
+        height_anim.setDuration(300);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -423,7 +427,7 @@ public class MediaSessionPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = visualizer;
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(200);
+        height_anim.setDuration(300);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
