@@ -14,7 +14,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
-import android.media.session.PlaybackState;
 import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
@@ -26,22 +25,18 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.RelativeLayout;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.abh80.smartedge.plugins.BasePlugin;
-import com.abh80.smartedge.CallBack;
+import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.MediaSession.MediaSessionPlugin;
 import com.abh80.smartedge.plugins.Notification.NotificationPlugin;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;

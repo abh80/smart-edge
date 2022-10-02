@@ -27,7 +27,7 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
-import com.abh80.smartedge.CallBack;
+import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.NotiService;

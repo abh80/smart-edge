@@ -7,7 +7,7 @@ import android.media.session.PlaybackState;
 
 import androidx.annotation.Nullable;
 
-import com.abh80.smartedge.CallBack;
+import com.abh80.smartedge.utils.CallBack;
 
 public class MediaCallback extends MediaController.Callback {
     public MediaCallback(MediaController mCurrent, MediaSessionPlugin context) {

@@ -1,40 +1,27 @@
 package com.abh80.smartedge.plugins.Notification;
 
-import static android.content.Context.NOTIFICATION_SERVICE;
-
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
-import android.media.session.PlaybackState;
 import android.os.Handler;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
-import com.abh80.smartedge.CallBack;
+import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
-import com.abh80.smartedge.services.NotiService;
 import com.abh80.smartedge.services.OverlayService;
 import com.google.android.material.imageview.ShapeableImageView;
 
