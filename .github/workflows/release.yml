@@ -45,7 +45,8 @@ jobs:
         run: |
           git config --global user.name 'Github Actions'
           git config --global user.email 'action@github.com'
-          git commit -m "publish new build" -A
+          git add .
+          git commit -m "publish new build"
       - name: Push to Github
         uses: ad-m/github-push-action@master
         with:
