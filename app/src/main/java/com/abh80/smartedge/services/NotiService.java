@@ -36,8 +36,12 @@ public class NotiService extends NotificationListenerService {
         Notification notification = sbn.getNotification();
         intent.putExtra("package_name", sbn.getPackageName());
         intent.putExtra("id", sbn.getKey());
-        intent.putExtra("title", notification.extras.getString("android.title"));
-        intent.putExtra("body", notification.extras.getString("android.text"));
+        try {
+            intent.putExtra("title", notification.extras.getString("android.title"));
+            intent.putExtra("body", notification.extras.getString("android.text"));
+        } catch (Exception e) {
+            //ignore
+        }
         notifications.add(sbn);
         sendBroadcast(intent);
     }
