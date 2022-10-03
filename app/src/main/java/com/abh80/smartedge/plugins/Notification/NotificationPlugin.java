@@ -54,10 +54,10 @@ public class NotificationPlugin extends BasePlugin {
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_POSTED")) {
                 Bundle extras = intent.getExtras();
                 handleNotificationUpdate(extras.getString("title"), extras.getString("body"), extras.getString("package_name"),
-                        extras.getInt("id"));
+                        extras.getString("id"));
             }
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_REMOVED")) {
-                int id = intent.getExtras().getInt("id");
+                String id = intent.getExtras().getString("id");
                 handleNotificationUpdate(id);
             }
         }
@@ -81,15 +81,15 @@ public class NotificationPlugin extends BasePlugin {
         super.onEvent(event);
     }
 
-    private void handleNotificationUpdate(int id) {
-        Optional<NotificationMeta> to_remove = notificationArrayList.stream().filter(x -> x.getId() == id).findFirst();
+    private void handleNotificationUpdate(String id) {
+        Optional<NotificationMeta> to_remove = notificationArrayList.stream().filter(x -> x.getId().equals(id)).findFirst();
         to_remove.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
         if (notificationArrayList.size() > 0) meta = notificationArrayList.get(0);
         else meta = null;
         update();
     }
 
-    private void handleNotificationUpdate(String title, String description, String packagename, int id) {
+    private void handleNotificationUpdate(String title, String description, String packagename, String id) {
         if (title == null || description == null) return;
         Drawable icon_d = null;
 
