@@ -54,10 +54,10 @@ public class NotificationPlugin extends BasePlugin {
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_POSTED")) {
                 Bundle extras = intent.getExtras();
                 handleNotificationUpdate(extras.getString("title"), extras.getString("body"), extras.getString("package_name"),
-                        extras.getString("id"));
+                        extras.getInt("id"));
             }
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_REMOVED")) {
-                String id = intent.getExtras().getString("id");
+                int id = intent.getExtras().getInt("id");
                 handleNotificationUpdate(id);
             }
         }
@@ -81,15 +81,15 @@ public class NotificationPlugin extends BasePlugin {
         super.onEvent(event);
     }
 
-    private void handleNotificationUpdate(String id) {
-        Optional<NotificationMeta> to_remove = notificationArrayList.stream().filter(x -> x.getId().equals(id)).findFirst();
+    private void handleNotificationUpdate(int id) {
+        Optional<NotificationMeta> to_remove = notificationArrayList.stream().filter(x -> x.getId() == id).findFirst();
         to_remove.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
         if (notificationArrayList.size() > 0) meta = notificationArrayList.get(0);
         else meta = null;
         update();
     }
 
-    private void handleNotificationUpdate(String title, String description, String packagename, String id) {
+    private void handleNotificationUpdate(String title, String description, String packagename, int id) {
         if (title == null || description == null) return;
         Drawable icon_d = null;
 
@@ -102,6 +102,8 @@ public class NotificationPlugin extends BasePlugin {
             return;
         }
         meta = new NotificationMeta(title, description, id, icon_d);
+        Optional<NotificationMeta> meta1 = notificationArrayList.stream().filter(x -> x.getId() == id).findFirst();
+        meta1.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
         notificationArrayList.add(0, meta);
         context.enqueue(this);
         update();
@@ -139,25 +141,33 @@ public class NotificationPlugin extends BasePlugin {
             return;
         }
         ShapeableImageView imageView = mView.findViewById(R.id.cover);
-        if (overlayOpen && mView != null && !expanded) {
-            closeOverlay(new CallBack() {
-                @Override
-                public void onFinish() {
-                    super.onFinish();
+        if (overlayOpen) {
+            if (mView != null) {
+                if (!expanded) {
+                    closeOverlay(new CallBack() {
+                        @Override
+                        public void onFinish() {
+                            super.onFinish();
+                            imageView.setImageDrawable(meta.getIcon_drawable());
+                            ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
+                            ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
+                            openOverlay();
+                        }
+                    });
+                } else {
                     imageView.setImageDrawable(meta.getIcon_drawable());
                     ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
                     ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
-                    openOverlay();
                 }
-            });
+            }
         } else {
             if (mView != null) {
                 imageView.setImageDrawable(meta.getIcon_drawable());
                 ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
                 ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
+                openOverlay();
             }
         }
-        openOverlay();
     }
 
     @Override

@@ -87,6 +87,8 @@ public class UpdaterService extends Service {
                             Intent intent = new Intent(getPackageName() + ".UPDATE_AVAIL");
                             intent.putExtra("version", object.getString("name"));
                             sendBroadcast(new Intent(intent));
+                        } else {
+                            stopSelf();
                         }
                     } catch (Exception e) {
                         // do nothing lol
@@ -101,7 +103,9 @@ public class UpdaterService extends Service {
             } else {
                 stopSelf();
             }
-        }, error -> {
+        }, error ->
+
+        {
         });
         queue.add(jsonArrayRequest);
     }

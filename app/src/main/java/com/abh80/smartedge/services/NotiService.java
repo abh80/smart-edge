@@ -35,7 +35,7 @@ public class NotiService extends NotificationListenerService {
         Intent intent = new Intent(getPackageName() + ".NOTIFICATION_POSTED");
         Notification notification = sbn.getNotification();
         intent.putExtra("package_name", sbn.getPackageName());
-        intent.putExtra("id", sbn.getKey());
+        intent.putExtra("id", sbn.getId());
         try {
             intent.putExtra("title", notification.extras.getString("android.title"));
             intent.putExtra("body", notification.extras.getString("android.text"));
@@ -50,7 +50,7 @@ public class NotiService extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
         Intent intent = new Intent(getPackageName() + ".NOTIFICATION_REMOVED");
-        intent.putExtra("id", sbn.getKey());
+        intent.putExtra("id", sbn.getId());
         notifications.remove(sbn);
         sendBroadcast(intent);
     }
@@ -59,7 +59,7 @@ public class NotiService extends NotificationListenerService {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(context.getPackageName() + ".ACTION_OPEN_CLOSE")) {
-                Optional<StatusBarNotification> n = notifications.stream().filter(x -> x.getKey().equals(intent.getExtras().getString("id"))).findFirst();
+                Optional<StatusBarNotification> n = notifications.stream().filter(x -> x.getId() == intent.getExtras().getInt("id")).findFirst();
                 n.ifPresent(x -> {
                     try {
                         if (x.getNotification().deleteIntent != null) {

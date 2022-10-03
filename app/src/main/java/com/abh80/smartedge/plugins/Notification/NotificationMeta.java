@@ -10,27 +10,21 @@ public class NotificationMeta {
     private Icon icon;
     private Drawable icon_drawable;
 
-    public NotificationMeta(String title, String description, String id, Icon icon) {
-        this.title = title;
-        this.description = description;
-        this.icon = icon;
-        this.id = id;
-    }
 
-    public NotificationMeta(String title, String description, String id, Drawable icon) {
+    public NotificationMeta(String title, String description, int id, Drawable icon) {
         this.title = title;
         this.description = description;
         this.icon_drawable = icon;
         this.id = id;
     }
 
-    private String id;
+    private int id;
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
