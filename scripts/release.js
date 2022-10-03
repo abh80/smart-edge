@@ -30,7 +30,7 @@ const versionName = gradleBuild
     owner: "abh80",
     repo: "smart-edge",
     tag_name: versionCode,
-    name: versionName,
+    name: "v" + versionName,
     body: "🎉 " + versionName + " Released!",
   });
   const fdata = await octokit.rest.repos.uploadReleaseAsset({
