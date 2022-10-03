@@ -191,7 +191,6 @@ public class NotificationPlugin extends BasePlugin {
     public void onUnbind() {
         closeOverlay();
         mView = null;
-        meta = null;
         overlayOpen = false;
     }
 
