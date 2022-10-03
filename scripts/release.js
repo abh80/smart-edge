@@ -4,7 +4,15 @@ const github = require("@actions/github");
 const gradleBuild = fs.readFileSync(process.cwd() + "/app/build.gradle", {
   encoding: "ascii",
 });
-const version = gradleBuild
+const versionCode = gradleBuild
+  .split("\n")
+  .filter((x) => x.includes("versionCode"))[0]
+  .trim()
+  .replace("versionCode", "")
+  .replace(/"/g, "")
+  .trim()
+  .toString();
+const versionName = gradleBuild
   .split("\n")
   .filter((x) => x.includes("versionName"))[0]
   .trim()
@@ -21,9 +29,9 @@ const version = gradleBuild
   const data = await octokit.rest.repos.createRelease({
     owner: "abh80",
     repo: "smart-edge",
-    tag_name: version,
-    name: version,
-    body: "🎉 " + version + " Released!",
+    tag_name: versionCode,
+    name: versionName,
+    body: "🎉 " + versionName + " Released!",
   });
   const fdata = await octokit.rest.repos.uploadReleaseAsset({
     owner: "abh80",
