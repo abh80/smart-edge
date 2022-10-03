@@ -12,7 +12,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Handler;
+import android.service.notification.StatusBarNotification;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -32,11 +35,13 @@ import com.abh80.smartedge.services.OverlayService;
 import com.abh80.smartedge.utils.NotificationHolderClass;
 import com.google.android.material.imageview.ShapeableImageView;
 
+import java.util.ArrayList;
+import java.util.Optional;
+
 
 public class NotificationPlugin extends BasePlugin {
     private View mView;
     private OverlayService context;
-    private NotificationManager manager;
 
     @Override
     public String getID() {
@@ -46,9 +51,18 @@ public class NotificationPlugin extends BasePlugin {
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("kek", "got");
+            if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_POSTED")) {
+                Bundle extras = intent.getExtras();
+                handleNotificationUpdate(extras.getString("title"), extras.getString("body"), extras.getString("package_name"),
+                        extras.getInt("id"));
+            }
+            if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_REMOVED")) {
+                int id = intent.getExtras().getInt("id");
+                handleNotificationUpdate(id);
+            }
         }
     };
+    private ArrayList<NotificationMeta> notificationArrayList = new ArrayList<>();
 
     @Override
     public void onCreate(OverlayService context) {
@@ -56,35 +70,41 @@ public class NotificationPlugin extends BasePlugin {
         mHandler = new Handler(context.getMainLooper());
         IntentFilter filter = new IntentFilter();
         filter.addAction(context.getPackageName() + ".NOTIFICATION_POSTED");
+        filter.addAction(context.getPackageName() + ".NOTIFICATION_REMOVED");
         context.registerReceiver(broadcastReceiver, filter);
     }
 
     NotificationMeta meta;
-    private Notification notification;
 
     @Override
     public void onEvent(AccessibilityEvent event) {
         super.onEvent(event);
-        if (event.getEventType() == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) {
-            Notification n = (Notification) event.getParcelableData();
-            String title = n.extras.getString("android.title");
-            String description = n.extras.getString("android.text");
-            if (title == null || description == null) return;
-            Drawable icon_d = null;
+    }
 
-            try {
-                icon_d = context.getPackageManager().getApplicationIcon(event.getPackageName().toString());
-            } catch (PackageManager.NameNotFoundException e) {
-                // do nothing lol
-            }
-            if (icon_d == null) {
-                return;
-            }
-            meta = new NotificationMeta(title, description, icon_d);
-            context.enqueue(this);
-            update();
-            notification = n;
+    private void handleNotificationUpdate(int id) {
+        Optional<NotificationMeta> to_remove = notificationArrayList.stream().filter(x -> x.getId() == id).findFirst();
+        to_remove.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
+        if (notificationArrayList.size() > 0) meta = notificationArrayList.get(0);
+        else meta = null;
+        update();
+    }
+
+    private void handleNotificationUpdate(String title, String description, String packagename, int id) {
+        if (title == null || description == null) return;
+        Drawable icon_d = null;
+
+        try {
+            icon_d = context.getPackageManager().getApplicationIcon(packagename);
+        } catch (PackageManager.NameNotFoundException e) {
+            // do nothing lol
         }
+        if (icon_d == null) {
+            return;
+        }
+        meta = new NotificationMeta(title, description, id, icon_d);
+        notificationArrayList.add(0, meta);
+        context.enqueue(this);
+        update();
     }
 
     private void openOverlay() {
@@ -93,21 +113,31 @@ public class NotificationPlugin extends BasePlugin {
     }
 
     private void closeOverlay() {
+        if (expanded) onCollapse();
+        if (!overlayOpen) return;
         overlayOpen = false;
         animateChild(false, 0);
-        notification = null;
         mHandler.postDelayed(() -> context.dequeue(this), 301);
     }
 
     private void closeOverlay(CallBack callBack) {
         overlayOpen = false;
+        if (expanded) onCollapse();
+        if (!overlayOpen) {
+            callBack.onFinish();
+            return;
+        }
         animateChild(false, 0, callBack);
-        notification = null;
     }
 
     private boolean overlayOpen = false;
 
     private void update() {
+        if (mView == null) return;
+        if (meta == null) {
+            closeOverlay();
+            return;
+        }
         ShapeableImageView imageView = mView.findViewById(R.id.cover);
         if (overlayOpen && mView != null && !expanded) {
             closeOverlay(new CallBack() {
@@ -127,6 +157,7 @@ public class NotificationPlugin extends BasePlugin {
                 ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
             }
         }
+        openOverlay();
     }
 
     @Override
@@ -173,6 +204,7 @@ public class NotificationPlugin extends BasePlugin {
             } else {
                 layoutParams.endToStart = R.id.blank_space;
                 relativeLayout.setPadding(0, 0, 0, 0);
+                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
             }
             relativeLayout.setLayoutParams(layoutParams);
         }
@@ -192,7 +224,6 @@ public class NotificationPlugin extends BasePlugin {
                 layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
                 mView.setLayoutParams(layoutParams);
             } else {
-                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
                 layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
                 layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -222,15 +253,12 @@ public class NotificationPlugin extends BasePlugin {
 
     @Override
     public void onClick() {
-        if (notification != null) {
-            try {
-                if (notification.contentIntent != null) notification.contentIntent.send();
-                if (notification.deleteIntent != null) notification.deleteIntent.send();
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
-            }
+        if (meta != null) {
+            Intent intent = new Intent(context.getPackageName() + ".ACTION_OPEN_CLOSE");
+            intent.putExtra("id", meta.getId());
+            context.sendBroadcast(intent);
+            handleNotificationUpdate(meta.getId());
         }
-        closeOverlay();
     }
 
     @Override

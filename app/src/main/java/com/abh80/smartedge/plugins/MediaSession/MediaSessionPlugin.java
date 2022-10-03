@@ -154,6 +154,7 @@ public class MediaSessionPlugin extends BasePlugin {
         return Color.valueOf(red, green, blue, alpha).toArgb();
 
     }
+
     private SongVisualizer visualizer;
     private MediaSessionManager mediaSessionManager;
 
@@ -289,7 +290,7 @@ public class MediaSessionPlugin extends BasePlugin {
         expanded = true;
         DisplayMetrics metrics = new DisplayMetrics();
         ctx.mWindowManager.getDefaultDisplay().getMetrics(metrics);
-        ctx.animateOverlay(500, metrics.widthPixels - 40 , expanded , OverLayCallBackStart, overLayCallBackEnd);
+        ctx.animateOverlay(500, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd);
         animateChild(true, (int) (500 / 2.5));
     }
 
@@ -310,6 +311,12 @@ public class MediaSessionPlugin extends BasePlugin {
                 layoutParams.bottomToTop = ConstraintSet.UNSET;
                 relativeLayout.setPadding(0, 0, 0, 0);
                 mHandler.removeCallbacks(r);
+                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
+                mView.findViewById(R.id.controls_holder).setVisibility(View.GONE);
+                mView.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
+                mView.findViewById(R.id.elapsed).setVisibility(View.GONE);
+                mView.findViewById(R.id.remaining).setVisibility(View.GONE);
             }
             relativeLayout.setLayoutParams(layoutParams);
         }
@@ -339,12 +346,6 @@ public class MediaSessionPlugin extends BasePlugin {
                 layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
                 mView.setLayoutParams(layoutParams);
             } else {
-                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
-                mView.findViewById(R.id.controls_holder).setVisibility(View.GONE);
-                mView.findViewById(R.id.progressBar).setVisibility(View.GONE);
-                mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.elapsed).setVisibility(View.GONE);
-                mView.findViewById(R.id.remaining).setVisibility(View.GONE);
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
                 layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
                 layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -363,7 +364,8 @@ public class MediaSessionPlugin extends BasePlugin {
 
     @Override
     public void onClick() {
-        if (mCurrent != null && mCurrent.getSessionActivity() != null){
+        if (expanded) return;
+        if (mCurrent != null && mCurrent.getSessionActivity() != null) {
             try {
                 mCurrent.getSessionActivity().send(0);
             } catch (PendingIntent.CanceledException e) {
