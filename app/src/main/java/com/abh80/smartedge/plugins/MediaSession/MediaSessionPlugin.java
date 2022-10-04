@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import kotlin.jvm.internal.Lambda;
+
 public class MediaSessionPlugin extends BasePlugin {
 
     private SeekBar seekBar;
@@ -188,6 +190,15 @@ public class MediaSessionPlugin extends BasePlugin {
         return "MediaSessionPlugin";
     }
 
+    private MediaSessionManager.OnActiveSessionsChangedListener listnerForActiveSessions = list -> {
+        list.forEach(x -> {
+            if (callbackMap.get(x.getPackageName()) != null) return;
+            MediaCallback c = new MediaCallback(x, this);
+            callbackMap.put(x.getPackageName(), c);
+            x.registerCallback(c);
+        });
+    };
+
     @Override
     public void onCreate(OverlayService context) {
         ctx = context;
@@ -196,20 +207,21 @@ public class MediaSessionPlugin extends BasePlugin {
         init();
 
         mediaSessionManager = (MediaSessionManager) ctx.getSystemService(Context.MEDIA_SESSION_SERVICE);
-        mediaSessionManager.addOnActiveSessionsChangedListener(list -> {
-            list.forEach(x -> {
-                if (callbackMap.get(x.getPackageName()) != null) return;
-                MediaCallback c = new MediaCallback(x, this);
-                callbackMap.put(x.getPackageName(), c);
-                x.registerCallback(c);
-            });
-        }, new ComponentName(ctx, NotiService.class));
-        mediaSessionManager.getActiveSessions(new ComponentName(ctx, NotiService.class)).forEach(x -> {
-            if (callbackMap.get(x.getPackageName()) != null) return;
-            MediaCallback c = new MediaCallback(x, this);
-            callbackMap.put(x.getPackageName(), c);
-            x.registerCallback(c);
-        });
+        mediaSessionManager.addOnActiveSessionsChangedListener(listnerForActiveSessions, new
+
+                ComponentName(ctx, NotiService.class));
+        mediaSessionManager.getActiveSessions(new
+
+                        ComponentName(ctx, NotiService.class)).
+
+                forEach(x ->
+
+                {
+                    if (callbackMap.get(x.getPackageName()) != null) return;
+                    MediaCallback c = new MediaCallback(x, this);
+                    callbackMap.put(x.getPackageName(), c);
+                    x.registerCallback(c);
+                });
     }
 
     public void shouldRemoveOverlay() {
@@ -285,6 +297,8 @@ public class MediaSessionPlugin extends BasePlugin {
     @Override
     public void onDestroy() {
         if (visualizer != null) visualizer.release();
+        if (mediaSessionManager != null)
+            mediaSessionManager.removeOnActiveSessionsChangedListener(listnerForActiveSessions);
         mediaSessionManager = null;
         mCurrent = null;
         mView = null;
