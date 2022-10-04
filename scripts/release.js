@@ -6,20 +6,18 @@ const gradleBuild = fs.readFileSync(process.cwd() + "/app/build.gradle", {
 });
 const versionCode = gradleBuild
   .split("\n")
-  .filter((x) => x.includes("versionCode"))[0]
+  .find((x) => x.includes("versionCode"))
   .trim()
   .replace("versionCode", "")
   .replace(/"/g, "")
-  .trim()
-  .toString();
+  .trim();
 const versionName = gradleBuild
   .split("\n")
-  .filter((x) => x.includes("versionName"))[0]
+  .find((x) => x.includes("versionName"))
   .trim()
   .replace("versionName", "")
   .replace(/"/g, "")
-  .trim()
-  .toString();
+  .trim();
 (async () => {
   const TOKEN = process.env["TOKEN"];
   if (!TOKEN) return core.setFailed("No token was provided, exiting...");
