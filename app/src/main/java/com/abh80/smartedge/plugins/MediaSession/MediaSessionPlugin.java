@@ -19,6 +19,7 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -311,7 +312,6 @@ public class MediaSessionPlugin extends BasePlugin {
                 layoutParams.bottomToTop = R.id.guideline_half;
                 int pad = ctx.dpToInt(20);
                 relativeLayout.setPadding(pad, pad, pad, pad);
-                mHandler.post(r);
             } else {
                 layoutParams.endToStart = R.id.blank_space;
                 layoutParams.bottomToTop = ConstraintSet.UNSET;
@@ -351,6 +351,7 @@ public class MediaSessionPlugin extends BasePlugin {
                 layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
                 layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
                 mView.setLayoutParams(layoutParams);
+                mHandler.post(r);
             } else {
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
                 layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -411,7 +412,7 @@ public class MediaSessionPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = visualizer;
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(300);
+        height_anim.setDuration(expanding ? 500 : 300);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -438,6 +439,7 @@ public class MediaSessionPlugin extends BasePlugin {
 
             }
         });
+        if (expanding) height_anim.setInterpolator(new OvershootInterpolator(0.5f));
         height_anim.start();
     }
 
@@ -445,7 +447,7 @@ public class MediaSessionPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = visualizer;
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(300);
+        height_anim.setDuration(expanding ? 500 : 300);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -470,6 +472,7 @@ public class MediaSessionPlugin extends BasePlugin {
                 if (expanding) view2.setVisibility(View.INVISIBLE);
             }
         });
+        height_anim.setInterpolator(new OvershootInterpolator(0.5f));
         height_anim.start();
     }
 

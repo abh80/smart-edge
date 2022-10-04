@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.animation.OvershootInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -291,7 +292,7 @@ public class NotificationPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = mView.findViewById(R.id.cover2);
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(300);
+        height_anim.setDuration(expanding ? 500 : 300);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -318,6 +319,7 @@ public class NotificationPlugin extends BasePlugin {
 
             }
         });
+        if (expanding) height_anim.setInterpolator(new OvershootInterpolator(0.5f));
         height_anim.start();
     }
 
@@ -325,7 +327,8 @@ public class NotificationPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = mView.findViewById(R.id.cover2);
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(300);
+        height_anim.setDuration(expanding ? 500 : 300);
+
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -350,6 +353,7 @@ public class NotificationPlugin extends BasePlugin {
                 if (expanding) view2.setVisibility(View.INVISIBLE);
             }
         });
+        if (expanding) height_anim.setInterpolator(new OvershootInterpolator(0.5f));
         height_anim.start();
     }
 }

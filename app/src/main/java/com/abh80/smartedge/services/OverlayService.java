@@ -7,6 +7,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -25,6 +27,11 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -38,6 +45,7 @@ import com.abh80.smartedge.plugins.Notification.NotificationPlugin;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -97,7 +105,7 @@ public class OverlayService extends AccessibilityService {
     }
 
     private float y1, y2;
-    static final int MIN_DISTANCE = 100;
+    static final int MIN_DISTANCE = 50;
     private final AtomicLong press_start = new AtomicLong();
 
     @Override
@@ -105,6 +113,13 @@ public class OverlayService extends AccessibilityService {
         super.onServiceConnected();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             throwable.printStackTrace();
+            if (sharedPreferences.getBoolean("clip_copy_enabled", true)) {
+                ClipboardManager clipboard = (ClipboardManager)
+                        getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("smart edge error log", Arrays.toString(throwable.getStackTrace()));
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(this, "Smart Edge Crashed, logs copied to clipboard", Toast.LENGTH_SHORT).show();
+            }
             Runtime.getRuntime().exit(0);
         });
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
@@ -211,13 +226,13 @@ public class OverlayService extends AccessibilityService {
         }
         ViewGroup.LayoutParams params = mView.getLayoutParams();
         ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
-        height_anim.setDuration(300);
+        height_anim.setDuration(500);
         height_anim.addUpdateListener(valueAnimator -> {
             params.height = (int) valueAnimator.getAnimatedValue();
             mWindowManager.updateViewLayout(mView, params);
         });
         ValueAnimator width_anim = ValueAnimator.ofInt(mView.getMeasuredWidth(), w);
-        width_anim.setDuration(300);
+        width_anim.setDuration(500);
         width_anim.addUpdateListener(v2 -> {
             params.width = (int) v2.getAnimatedValue();
             mWindowManager.updateViewLayout(mView, params);
@@ -240,6 +255,9 @@ public class OverlayService extends AccessibilityService {
                 }
             }
         });
+        width_anim.setInterpolator(new OvershootInterpolator(1f));
+        height_anim.setInterpolator(new OvershootInterpolator(1f));
+
         width_anim.start();
         height_anim.start();
     }
