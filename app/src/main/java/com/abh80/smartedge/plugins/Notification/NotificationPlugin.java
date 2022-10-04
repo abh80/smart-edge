@@ -33,6 +33,7 @@ import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.OverlayService;
 import com.abh80.smartedge.utils.NotificationHolderClass;
+import com.abh80.smartedge.utils.ToggleSetting;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.ArrayList;
@@ -77,8 +78,18 @@ public class NotificationPlugin extends BasePlugin {
     NotificationMeta meta;
 
     @Override
+    public String getName() {
+        return "Notification";
+    }
+
+    @Override
     public void onEvent(AccessibilityEvent event) {
         super.onEvent(event);
+    }
+
+    @Override
+    public ArrayList<ToggleSetting> getSettings() {
+        return null;
     }
 
     private void handleNotificationUpdate(int id) {
@@ -196,7 +207,8 @@ public class NotificationPlugin extends BasePlugin {
 
     @Override
     public void onDestroy() {
-        context.unregisterReceiver(broadcastReceiver);
+        if(context != null )context.unregisterReceiver(broadcastReceiver);
+        meta = null;
     }
 
     private Handler mHandler;

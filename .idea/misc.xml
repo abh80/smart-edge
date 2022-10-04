@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/suman/.gradle/caches/transforms-3/0a1e1205a4ad55603e56c0d69f6f4244/transformed/appcompat-1.5.0/res/drawable/abc_list_divider_material.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable-v24/avd_pause_to_play.xml" value="0.242" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable-v24/avd_play_to_pause.xml" value="0.242" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable-v24/fast_forward.xml" value="0.2455" />
@@ -16,11 +17,18 @@
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_baseline_pause_24.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2455" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/rounded_corner.xml" value="0.1115" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/rounded_corner_setting.xml" value="0.1115" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/rounded_corner_setting_bottom.xml" value="0.1115" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/drawable/rounded_corner_setting_top.xml" value="0.1115" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/activity_main.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/activity_permission.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/media_session_layout.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/notification_layout.xml" value="0.22735507246376813" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/overlay_layout.xml" value="0.34479166666666666" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/primary_settings.xml" value="0.34375" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/toggle_setting_layout.xml" value="0.34375" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/toggle_setting_null_layout.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/xml/global_action_bar_service.xml" value="0.16666666666666666" />

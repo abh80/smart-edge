@@ -118,9 +118,10 @@ public class UpdaterService extends Service {
     }
 
     NotificationManager manager;
-    private final String NOTIFICATION_CHANNEL_ID = getPackageName() + ".updater_channel";
+
 
     private void sendNotification(String text) {
+        final String NOTIFICATION_CHANNEL_ID = getPackageName() + ".updater_channel";
         String channelName = "Updater Service";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_MIN);
         manager.createNotificationChannel(chan);
@@ -199,6 +200,7 @@ public class UpdaterService extends Service {
         }
 
         protected void onProgressUpdate(String... progress) {
+            final String NOTIFICATION_CHANNEL_ID = getPackageName() + ".updater_channel";
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(UpdaterService.this, NOTIFICATION_CHANNEL_ID);
             notificationBuilder.setOngoing(true)
                     .setSmallIcon(R.drawable.launcher_foreground)

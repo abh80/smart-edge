@@ -32,11 +32,13 @@ import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.NotiService;
 import com.abh80.smartedge.services.OverlayService;
+import com.abh80.smartedge.utils.ToggleSetting;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -281,7 +283,11 @@ public class MediaSessionPlugin extends BasePlugin {
 
     @Override
     public void onDestroy() {
-        visualizer.release();
+        if (visualizer != null) visualizer.release();
+        mediaSessionManager = null;
+        mCurrent = null;
+        mView = null;
+
     }
 
     @Override
@@ -376,6 +382,16 @@ public class MediaSessionPlugin extends BasePlugin {
 
     @Override
     public String[] permissionsRequired() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return "Media Session";
+    }
+
+    @Override
+    public ArrayList<ToggleSetting> getSettings() {
         return null;
     }
 

@@ -1,6 +1,7 @@
 package com.abh80.smartedge.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,27 +9,41 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.abh80.smartedge.BuildConfig;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.activities.PermissionActivity;
+import com.abh80.smartedge.plugins.ExportedPlugins;
 import com.abh80.smartedge.services.UpdaterService;
+import com.abh80.smartedge.utils.ToggleSetting;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private SharedPreferences sharedPreferences;
+    private final ArrayList<ToggleSetting> settings = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,16 +60,47 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             startActivity(intent);
             Toast.makeText(this, "Installed Apps -> Smart Edge", Toast.LENGTH_SHORT).show();
         });
-        MaterialSwitch enable_btn2 = findViewById(R.id.enable_switch2);
-        enable_btn2.setOnClickListener(l -> {
-            sharedPreferences.edit().putBoolean("hwd_enabled", enable_btn2.isChecked()).apply();
+        settings.add(new ToggleSetting("Enable Hardware Acceleration", "App Settings") {
+            @Override
+            public boolean onAttach() {
+                return sharedPreferences.getBoolean("hwd_enabled", false);
+            }
+
+            @Override
+            public void onCheckChanged(boolean checked) {
+                sharedPreferences.edit().putBoolean("hwd_enabled", checked).apply();
+            }
         });
-        enable_btn2.setChecked(sharedPreferences.getBoolean("hwd_enabled", false));
+        settings.add(null);
+        ExportedPlugins.getPlugins().forEach(x -> {
+            settings.add(new ToggleSetting("Enable " + x.getName() + " Plugin", x.getName() + " Plugin Settings") {
+                             @Override
+                             public boolean onAttach() {
+                                 return sharedPreferences.getBoolean(x.getID() + "_enabled", true);
+                             }
 
+                             @Override
+                             public void onCheckChanged(boolean checked) {
+                                 sharedPreferences.edit().putBoolean(x.getID() + "_enabled", checked).apply();
+                             }
+                         }
+            );
+            if (x.getSettings() != null) {
+                settings.addAll(x.getSettings());
+            }
+            settings.add(null);
+        });
+        RecylerViewSettingsAdapter adapter = new RecylerViewSettingsAdapter(this, settings);
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+        recyclerView.addItemDecoration(new ItemDecoration());
+        recyclerView.invalidateItemDecorations();
         startService(new Intent(this, UpdaterService.class));
-
         registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".UPDATE_AVAIL"));
     }
+
+    private RecyclerView recyclerView;
 
     @Override
     protected void onResume() {
@@ -86,9 +132,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         Intent intent = new Intent(getPackageName() + ".SETTINGS_CHANGED");
+        Bundle b = new Bundle();
         sharedPreferences.getAll().forEach((key, value) -> {
-            intent.putExtra(key, (boolean) value);
+            b.putBoolean(key, (boolean) value);
         });
+        intent.putExtra("settings", b);
         sendBroadcast(intent);
     }
 
@@ -127,6 +175,86 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (requestCode == 102 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             MainActivity.this.sendBroadcast(new Intent(getPackageName() + ".START_UPDATE"));
             Toast.makeText(MainActivity.this, "Updating in background! Please don't kill the app", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private int dpToInt(int v) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
+    }
+
+    public class ItemDecoration extends RecyclerView.ItemDecoration {
+        @SuppressLint("UseCompatLoadingForDrawables")
+        @Override
+        public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            super.onDraw(c, parent, state);
+            int childCount = recyclerView.getChildCount();
+            int width = recyclerView.getWidth();
+            Rect cornerBounds = new Rect();
+            c.getClipBounds(cornerBounds);
+            for (int i = 0; i < childCount; i++) {
+                View childAt = recyclerView.getChildAt(i);
+                RecylerViewSettingsAdapter.ViewHolder viewHolder = (RecylerViewSettingsAdapter.ViewHolder) recyclerView.getChildViewHolder(childAt);
+                int y = ((int) childAt.getY()) + childAt.getHeight();
+                boolean shallDrawDivider;
+                if (recyclerView.getChildAt(i + 1) != null)
+                    shallDrawDivider = ((RecylerViewSettingsAdapter.ViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(i + 1))).textView == null;
+                else
+                    shallDrawDivider = false;
+
+                Drawable mDivider = getBaseContext().getDrawable(com.google.android.material.R.drawable.abc_list_divider_material);
+                int mDividerHeight = mDivider.getIntrinsicHeight();
+
+                if (viewHolder.isItem && shallDrawDivider) {
+                    mDivider.setBounds(dpToInt(20), y, width - dpToInt(20), mDividerHeight + y);
+                    mDivider.draw(c);
+                }
+                if (!viewHolder.isItem) {
+                    if (settings.size() >= i + 2) {
+                        c.drawText(settings.get(i + 1).category, cornerBounds.left + dpToInt(10), childAt.getBottom() - dpToInt(10), new Paint() {
+                            {
+                                setColor(MainActivity.this.getColor(R.color.quite_white));
+                                setTextSize(dpToInt(16));
+                            }
+                        });
+                    }
+                    Drawable cornerBottom = getDrawable(R.drawable.rounded_corner_setting_bottom);
+                    Drawable cornerTop = getDrawable(R.drawable.rounded_corner_setting_top);
+                    if (recyclerView.getChildAt(i + 1) != null) {
+                        View v = recyclerView.getChildAt(i + 1);
+                        cornerTop.setBounds(cornerBounds.left, (int) v.getY() - dpToInt(20), cornerBounds.right, (int) v.getY());
+                        cornerTop.draw(c);
+                    }
+                    if (recyclerView.getChildAt(i - 1) != null) {
+                        View v = recyclerView.getChildAt(i - 1);
+                        cornerBottom.setBounds(cornerBounds.left, v.getBottom(), cornerBounds.right, v.getBottom() + dpToInt(20));
+                        cornerBottom.draw(c);
+                    }
+
+                } else {
+                    int color = MaterialColors.getColor(MainActivity.this, com.google.android.material.R.attr.colorOnSecondary, getColor(R.color.md_theme_dark_secondary));
+                    Rect bounds = new Rect((int) cornerBounds.left, (int) childAt.getY(), cornerBounds.right, childAt.getBottom());
+                    c.drawRect(bounds, new Paint() {
+                        {
+                            setColor(color);
+                        }
+                    });
+                }
+
+            }
+            if (recyclerView.getChildCount() < 1) return;
+            if (((RecylerViewSettingsAdapter.ViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(0))).isItem) {
+                Drawable roundedCornerTop = getDrawable(R.drawable.rounded_corner_setting_top);
+                roundedCornerTop.setBounds(cornerBounds.left, cornerBounds.top, cornerBounds.right, (int) recyclerView.getChildAt(0).getY());
+                roundedCornerTop.draw(c);
+            }
+            if (((RecylerViewSettingsAdapter.ViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(recyclerView.getChildCount() - 1))).isItem) {
+                Drawable roundedCornerBottom = getDrawable(R.drawable.rounded_corner_setting_bottom);
+                roundedCornerBottom.setBounds(cornerBounds.left,
+                        recyclerView.getChildAt(recyclerView.getChildCount() - 1).getBottom(),
+                        cornerBounds.right,
+                        recyclerView.getChildAt(recyclerView.getChildCount() - 1).getBottom() + dpToInt(20));
+                roundedCornerBottom.draw(c);
+            }
         }
     }
 }

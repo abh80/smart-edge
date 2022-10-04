@@ -8,6 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="not_quite_white">#70FFFFFF</color>
+    <color name="quite_white">#d9d3d3</color>
     <color name="transparent">#00000000</color>
     <color name="seed">#6750A4</color>
     <color name="md_theme_light_surfaceTint">#6750A4</color>

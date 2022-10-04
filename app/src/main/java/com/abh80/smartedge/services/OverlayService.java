@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
@@ -29,6 +30,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.abh80.smartedge.plugins.BasePlugin;
+import com.abh80.smartedge.plugins.ExportedPlugins;
 import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.MediaSession.MediaSessionPlugin;
@@ -43,17 +45,19 @@ import java.util.concurrent.atomic.AtomicLong;
 public class OverlayService extends AccessibilityService {
 
     private boolean is_hwd_enabled = false;
-    private final ArrayList<BasePlugin> plugins = new ArrayList<>();
+    private final ArrayList<BasePlugin> plugins = ExportedPlugins.getPlugins();
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mView != null && mWindowManager != null)
-                mWindowManager.removeView(mView);
-            is_hwd_enabled = intent.getBooleanExtra("hwd_enabled", false);
+            sharedPreferences = intent.getExtras().getBundle("settings");
+            plugins.forEach(BasePlugin::onDestroy);
+            queued.clear();
+            if (mView != null && mWindowManager != null) {
+                mWindowManager.removeViewImmediate(mView);
+            }
             init();
-
         }
     };
 
@@ -82,7 +86,7 @@ public class OverlayService extends AccessibilityService {
         return START_STICKY;
     }
 
-    SharedPreferences sharedPreferences;
+    Bundle sharedPreferences = new Bundle();
 
     private WindowManager.LayoutParams getParams(int width, int height, int extFlags) {
         return new WindowManager.LayoutParams(
@@ -110,16 +114,18 @@ public class OverlayService extends AccessibilityService {
         setServiceInfo(info);
         registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".SETTINGS_CHANGED"));
 
-        sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        SharedPreferences sharedPreferences2 = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        sharedPreferences2.getAll().forEach((key, value) -> {
+            sharedPreferences.putBoolean(key, (boolean) value);
+        });
         is_hwd_enabled = sharedPreferences.getBoolean("hwd_enabled", false);
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
-        plugins.add(new MediaSessionPlugin());
-        plugins.add(new NotificationPlugin());
         init();
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private void init() {
+        binded_plugin = null;
         int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         if (is_hwd_enabled) {
             flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
@@ -166,7 +172,10 @@ public class OverlayService extends AccessibilityService {
             }
             return false;
         });
-        plugins.forEach(x -> x.onCreate(this));
+        plugins.forEach(x -> {
+            if (sharedPreferences.getBoolean(x.getID() + "_enabled", true)) x.onCreate(this);
+        });
+        bindPlugin();
     }
 
     ArrayList<String> queued = new ArrayList<>();
