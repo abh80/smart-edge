@@ -2,7 +2,12 @@ package com.abh80.smartedge.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +20,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 import android.util.TypedValue;
@@ -25,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,7 +46,9 @@ import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private SharedPreferences sharedPreferences;
@@ -47,6 +56,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            if (sharedPreferences.getBoolean("clip_copy_enabled", true)) {
+                ClipboardManager clipboard = (ClipboardManager)
+                        getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("smart edge error log", Arrays.toString(throwable.getStackTrace()));
+                clipboard.setPrimaryClip(clip);
+                sendCrashNotification();
+            }
+            Runtime.getRuntime().exit(0);
+        });
         init();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -69,6 +88,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             @Override
             public void onCheckChanged(boolean checked) {
                 sharedPreferences.edit().putBoolean("hwd_enabled", checked).apply();
+            }
+        });
+        settings.add(new ToggleSetting("Copy crash logs to clipboard", "App Settings") {
+            @Override
+            public boolean onAttach() {
+                return sharedPreferences.getBoolean("clip_copy_enabled", true);
+            }
+
+            @Override
+            public void onCheckChanged(boolean checked) {
+                sharedPreferences.edit().putBoolean("clip_copy_enabled", checked).apply();
             }
         });
         settings.add(null);
@@ -98,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         recyclerView.invalidateItemDecorations();
         startService(new Intent(this, UpdaterService.class));
         registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".UPDATE_AVAIL"));
+
     }
 
     private RecyclerView recyclerView;
@@ -186,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         @SuppressLint("UseCompatLoadingForDrawables")
         @Override
         public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            int color = MaterialColors.getColor(MainActivity.this, com.google.android.material.R.attr.colorOnSecondary, getColor(R.color.md_theme_dark_secondary));
             super.onDraw(c, parent, state);
             int childCount = recyclerView.getChildCount();
             int width = recyclerView.getWidth();
@@ -210,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 }
                 if (!viewHolder.isItem) {
                     if (settings.size() >= i + 2) {
-                        c.drawText(settings.get(i + 1).category, cornerBounds.left + dpToInt(10), childAt.getBottom() - dpToInt(10), new Paint() {
+                        c.drawText(settings.get(i + 1).category, cornerBounds.left + dpToInt(10), childAt.getBottom() - dpToInt(30), new Paint() {
                             {
                                 setColor(MainActivity.this.getColor(R.color.quite_white));
                                 setTextSize(dpToInt(16));
@@ -231,8 +263,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     }
 
                 } else {
-                    int color = MaterialColors.getColor(MainActivity.this, com.google.android.material.R.attr.colorOnSecondary, getColor(R.color.md_theme_dark_secondary));
-                    Rect bounds = new Rect((int) cornerBounds.left, (int) childAt.getY(), cornerBounds.right, childAt.getBottom());
+                    Rect bounds = new Rect(cornerBounds.left, (int) childAt.getY(), cornerBounds.right, childAt.getBottom());
                     c.drawRect(bounds, new Paint() {
                         {
                             setColor(color);
@@ -256,5 +287,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 roundedCornerBottom.draw(c);
             }
         }
+    }
+
+    private void sendCrashNotification() {
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        final String NOTIFICATION_CHANNEL_ID = getPackageName() + ".updater_channel";
+        String channelName = "Updater Service";
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_MIN);
+        manager.createNotificationChannel(chan);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        Notification notification = notificationBuilder.setOngoing(false)
+                .setContentTitle("Smart Edge Crashed")
+                .setContentText("Crash Log copied to clipboard")
+                .setSmallIcon(R.drawable.launcher_foreground)
+                .setPriority(NotificationManager.IMPORTANCE_MAX)
+                .setCategory(Notification.CATEGORY_ERROR)
+                .build();
+        manager.notify(100, notification);
     }
 }
