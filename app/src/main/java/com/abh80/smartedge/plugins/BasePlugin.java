@@ -4,7 +4,7 @@ import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.abh80.smartedge.services.OverlayService;
-import com.abh80.smartedge.utils.ToggleSetting;
+import com.abh80.smartedge.utils.SettingStruct;
 
 import java.util.ArrayList;
 
@@ -31,7 +31,7 @@ public abstract class BasePlugin {
     public void onEvent(AccessibilityEvent event) {
     }
 
-    public abstract ArrayList<ToggleSetting> getSettings();
+    public abstract ArrayList<SettingStruct> getSettings();
 
     public void onBindComplete() {
     }

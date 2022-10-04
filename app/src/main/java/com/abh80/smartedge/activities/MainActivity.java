@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -20,9 +19,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.Settings;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Toast;
@@ -37,22 +34,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.abh80.smartedge.BuildConfig;
 import com.abh80.smartedge.R;
-import com.abh80.smartedge.activities.PermissionActivity;
 import com.abh80.smartedge.plugins.ExportedPlugins;
 import com.abh80.smartedge.services.UpdaterService;
-import com.abh80.smartedge.utils.ToggleSetting;
+import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.materialswitch.MaterialSwitch;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private SharedPreferences sharedPreferences;
-    private final ArrayList<ToggleSetting> settings = new ArrayList<>();
+    private final ArrayList<SettingStruct> settings = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             startActivity(intent);
             Toast.makeText(this, "Installed Apps -> Smart Edge", Toast.LENGTH_SHORT).show();
         });
-        settings.add(new ToggleSetting("Enable Hardware Acceleration", "App Settings") {
+        settings.add(new SettingStruct("Enable Hardware Acceleration", "App Settings") {
             @Override
             public boolean onAttach() {
                 return sharedPreferences.getBoolean("hwd_enabled", false);
@@ -90,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 sharedPreferences.edit().putBoolean("hwd_enabled", checked).apply();
             }
         });
-        settings.add(new ToggleSetting("Copy crash logs to clipboard", "App Settings") {
+        settings.add(new SettingStruct("Copy crash logs to clipboard", "App Settings") {
             @Override
             public boolean onAttach() {
                 return sharedPreferences.getBoolean("clip_copy_enabled", true);
@@ -103,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         });
         settings.add(null);
         ExportedPlugins.getPlugins().forEach(x -> {
-            settings.add(new ToggleSetting("Enable " + x.getName() + " Plugin", x.getName() + " Plugin Settings") {
+            settings.add(new SettingStruct("Enable " + x.getName() + " Plugin", x.getName() + " Plugin Settings") {
                              @Override
                              public boolean onAttach() {
                                  return sharedPreferences.getBoolean(x.getID() + "_enabled", true);

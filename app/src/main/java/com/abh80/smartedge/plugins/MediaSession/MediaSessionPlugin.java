@@ -33,7 +33,7 @@ import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.NotiService;
 import com.abh80.smartedge.services.OverlayService;
-import com.abh80.smartedge.utils.ToggleSetting;
+import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import kotlin.jvm.internal.Lambda;
 
 public class MediaSessionPlugin extends BasePlugin {
 
@@ -406,7 +404,7 @@ public class MediaSessionPlugin extends BasePlugin {
     }
 
     @Override
-    public ArrayList<ToggleSetting> getSettings() {
+    public ArrayList<SettingStruct> getSettings() {
         return null;
     }
 

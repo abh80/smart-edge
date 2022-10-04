@@ -4,23 +4,22 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.abh80.smartedge.R;
-import com.abh80.smartedge.utils.ToggleSetting;
+import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
 import java.util.ArrayList;
 
 public class RecylerViewSettingsAdapter extends RecyclerView.Adapter<RecylerViewSettingsAdapter.ViewHolder> {
     private final Context context;
-    private final ArrayList<ToggleSetting> settings;
+    private final ArrayList<SettingStruct> settings;
 
-    public RecylerViewSettingsAdapter(Context context, ArrayList<ToggleSetting> settings) {
+    public RecylerViewSettingsAdapter(Context context, ArrayList<SettingStruct> settings) {
         this.context = context;
         this.settings = settings;
         settings.add(0, null);
