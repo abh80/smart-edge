@@ -53,6 +53,9 @@
         <activity
             android:name=".activities.PermissionActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.OverlayLayoutSettingActivity"
+            android:exported="false" />
 
         <service
             android:name=".services.NotiService"

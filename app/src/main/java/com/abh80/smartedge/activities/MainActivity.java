@@ -36,6 +36,7 @@ import com.abh80.smartedge.BuildConfig;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.ExportedPlugins;
 import com.abh80.smartedge.services.UpdaterService;
+import com.abh80.smartedge.utils.RecylerViewSettingsAdapter;
 import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.color.MaterialColors;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if (sharedPreferences.getBoolean("clip_copy_enabled", true)) {
                 ClipboardManager clipboard = (ClipboardManager)
                         getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("smart edge error log", Arrays.toString(throwable.getStackTrace()));
+                ClipData clip = ClipData.newPlainText("smart edge error log", throwable.getMessage());
                 clipboard.setPrimaryClip(clip);
                 sendCrashNotification();
             }
@@ -82,6 +83,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             @Override
             public void onCheckChanged(boolean checked) {
                 sharedPreferences.edit().putBoolean("hwd_enabled", checked).apply();
+            }
+        });
+        settings.add(new SettingStruct("Manage Overlay Layout", "App Settings", SettingStruct.TYPE_CUSTOM) {
+            @Override
+            public void onClick() {
+                startActivity(new Intent(MainActivity.this, OverlayLayoutSettingActivity.class));
             }
         });
         settings.add(new SettingStruct("Copy crash logs to clipboard", "App Settings") {

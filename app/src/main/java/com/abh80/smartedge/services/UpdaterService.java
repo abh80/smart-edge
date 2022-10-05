@@ -68,6 +68,7 @@ public class UpdaterService extends Service {
 
     @Override
     public void onCreate() {
+        Toast.makeText(this , "kek",Toast.LENGTH_SHORT).show();
         super.onCreate();
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         RequestQueue queue = Volley.newRequestQueue(this);
