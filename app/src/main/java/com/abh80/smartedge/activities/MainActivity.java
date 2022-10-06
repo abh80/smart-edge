@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if (sharedPreferences.getBoolean("clip_copy_enabled", true)) {
                 ClipboardManager clipboard = (ClipboardManager)
                         getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("smart edge error log", throwable.getMessage());
+                ClipData clip = ClipData.newPlainText("smart edge error log", Arrays.toString(throwable.getStackTrace()));
                 clipboard.setPrimaryClip(clip);
                 sendCrashNotification();
             }
@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         sharedPreferences.getAll().forEach((key, value) -> {
             if (value instanceof Boolean) {
                 b.putBoolean(key, (boolean) value);
+
             }
         });
         intent.putExtra("settings", b);
