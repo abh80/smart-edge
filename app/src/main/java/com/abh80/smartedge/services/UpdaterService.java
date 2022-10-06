@@ -59,7 +59,7 @@ public class UpdaterService extends Service {
                 if (download_url != null) {
                     new DownloadFileFromURL().execute(download_url);
                 } else {
-                    sendNotification("Cannot update app, please report the problem to developer.");
+                    sendNotification("Cannot update app, please report the problem to developer.", NotificationManager.IMPORTANCE_HIGH, false);
                 }
             }
         }
@@ -71,7 +71,7 @@ public class UpdaterService extends Service {
         super.onCreate();
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         RequestQueue queue = Volley.newRequestQueue(this);
-        sendNotification("Checking for updates");
+        sendNotification("Checking for updates", NotificationManager.IMPORTANCE_MIN, true);
         registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".START_UPDATE"));
         int VERSION_CODE = BuildConfig.VERSION_CODE;
         String baseUrl = "https://api.github.com/";
@@ -87,6 +87,7 @@ public class UpdaterService extends Service {
                             Intent intent = new Intent(getPackageName() + ".UPDATE_AVAIL");
                             intent.putExtra("version", object.getString("name"));
                             sendBroadcast(new Intent(intent));
+                            sendNotification("Update available", NotificationManager.IMPORTANCE_MAX, false);
                         } else {
                             stopSelf();
                         }
@@ -120,24 +121,22 @@ public class UpdaterService extends Service {
     NotificationManager manager;
 
 
-    private void sendNotification(String text) {
+    private void sendNotification(String text, int priority, boolean ongoing) {
         final String NOTIFICATION_CHANNEL_ID = getPackageName() + ".updater_channel";
         String channelName = "Updater Service";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_MIN);
         manager.createNotificationChannel(chan);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
+        Notification notification = notificationBuilder.setOngoing(ongoing)
                 .setContentTitle("Smart Edge")
                 .setContentText(text)
                 .setSmallIcon(R.drawable.launcher_foreground)
-
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setPriority(priority)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
         manager.notify(100, notification);
     }
-
     class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
         /**
@@ -146,7 +145,7 @@ public class UpdaterService extends Service {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            sendNotification("Starting download");
+            sendNotification("Starting download", NotificationManager.IMPORTANCE_MIN, true);
         }
 
         /**
@@ -205,7 +204,7 @@ public class UpdaterService extends Service {
             notificationBuilder.setOngoing(true)
                     .setSmallIcon(R.drawable.launcher_foreground)
                     .setPriority(NotificationManager.IMPORTANCE_MIN)
-                    .setCategory(Notification.CATEGORY_SERVICE)
+                    .setCategory(Notification.CATEGORY_PROGRESS)
                     .setContentTitle("Smart Edge")
                     .setContentText("Downloading update")
                     .setProgress(100, Integer.parseInt(String.valueOf(progress[0])), false);
