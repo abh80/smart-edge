@@ -102,7 +102,12 @@ public class OverlayService extends AccessibilityService {
 
 
     private void expandOverlay() {
-        if (binded_plugin != null) binded_plugin.onExpand();
+        if (binded_plugin != null) {
+            if (sharedPreferences.getBoolean("invert_click", false)) {
+                binded_plugin.onClick();
+            } else
+                binded_plugin.onExpand();
+        }
     }
 
     private void shrinkOverlay() {
@@ -228,7 +233,11 @@ public class OverlayService extends AccessibilityService {
                     return false;
                 } else {
                     if (press_start.get() + ViewConfiguration.getLongPressTimeout() > Instant.now().toEpochMilli())
-                        if (binded_plugin != null) binded_plugin.onClick();
+                        if (binded_plugin != null) {
+                            if (sharedPreferences.getBoolean("invert_click", false))
+                                binded_plugin.onExpand();
+                            else binded_plugin.onClick();
+                        }
                 }
 
             }

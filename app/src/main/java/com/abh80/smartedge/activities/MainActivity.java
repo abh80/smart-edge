@@ -92,6 +92,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 startActivity(new Intent(MainActivity.this, OverlayLayoutSettingActivity.class));
             }
         });
+        settings.add(new SettingStruct("Invert long press and click functions", "App Settings", SettingStruct.TYPE_TOGGLE) {
+            @Override
+            public void onCheckChanged(boolean checked) {
+                sharedPreferences.edit().putBoolean("invert_click", checked).apply();
+            }
+
+            @Override
+            public boolean onAttach() {
+                return sharedPreferences.getBoolean("invert_click", false);
+            }
+        });
         settings.add(new SettingStruct("Copy crash logs to clipboard", "App Settings") {
             @Override
             public boolean onAttach() {
