@@ -280,7 +280,8 @@ public class OverlayService extends AccessibilityService {
         ValueAnimator width_anim = ValueAnimator.ofInt(mView.getMeasuredWidth(), w);
         width_anim.setDuration(500);
         width_anim.addUpdateListener(v2 -> {
-            params.width = (int) v2.getAnimatedValue();
+            params.width = Math.abs((int) v2.getAnimatedValue());
+
             mWindowManager.updateViewLayout(mView, params);
         });
         width_anim.addListener(new AnimatorListenerAdapter() {
@@ -315,9 +316,6 @@ public class OverlayService extends AccessibilityService {
             @Override
             public void onFinish() {
                 super.onFinish();
-                View replace = mView.findViewById(R.id.binded);
-                if (replace == null) return;
-                ((ViewGroup) mView).removeView(replace);
             }
         });
 
@@ -325,11 +323,13 @@ public class OverlayService extends AccessibilityService {
 
     private void bindPlugin() {
         if (queued.size() <= 0) {
+            if (binded_plugin != null) binded_plugin.onUnbind();
+            View replace = mView.findViewById(R.id.binded);
+            if (replace == null) return;
+            ((ViewGroup) mView).removeView(replace);
             closeOverlay();
             return;
         }
-        Log.d("binding", queued.get(0));
-
         if (binded_plugin != null && Objects.equals(queued.get(0), binded_plugin.getID())) {
             return;
         }
