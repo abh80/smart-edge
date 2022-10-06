@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Toast;
@@ -166,7 +167,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         Intent intent = new Intent(getPackageName() + ".SETTINGS_CHANGED");
         Bundle b = new Bundle();
         sharedPreferences.getAll().forEach((key, value) -> {
-            b.putBoolean(key, (boolean) value);
+            if (value instanceof Boolean) {
+                b.putBoolean(key, (boolean) value);
+            }
         });
         intent.putExtra("settings", b);
         sendBroadcast(intent);

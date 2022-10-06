@@ -12,4 +12,10 @@
     <string name="enable_smart_edge">Enable Smart Edge</string>
     <string name="enable_hardware_acceleration">Enable Hardware Acceleration</string>
     <string name="access_description">Turn on to let the app draw over status bar</string>
+    <string name="x_offset">X offset</string>
+    <string name="y_offset">Y offset</string>
+    <string name="height_of_overlay_when_shrinked">Height of overlay when shrinked</string>
+    <string name="minimum_width_of_overlay_when_closed">Minimum Width of overlay when closed</string>
+    <string name="space_between_icons_when_overlay_is_shrinked">Space between icons when overlay is shrinked</string>
+    <string name="reset">Reset</string>
 </resources>

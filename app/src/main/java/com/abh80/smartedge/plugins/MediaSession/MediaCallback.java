@@ -15,6 +15,7 @@ public class MediaCallback extends MediaController.Callback {
         this.ctx = context;
         try {
             isPlaying = mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING;
+            mediaMetadata = mCurrent.getMetadata();
             updateView();
         } catch (Exception e) {
             // do nothing lol
@@ -29,7 +30,6 @@ public class MediaCallback extends MediaController.Callback {
     private void updateView() {
         if (!isPlaying) return;
         if (mCurrent.getMetadata() == null) return;
-        mediaMetadata = mCurrent.getMetadata();
         Bitmap b = mediaMetadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
         if (b == null) {
             return;
@@ -49,9 +49,10 @@ public class MediaCallback extends MediaController.Callback {
     public void onPlaybackStateChanged(@Nullable PlaybackState state) {
         super.onPlaybackStateChanged(state);
         if (state == null || mCurrent.getMetadata() == null) return;
+        MediaMetadata targetMetada = mCurrent.getMetadata();
         boolean isPlaying2 = state.getState() == PlaybackState.STATE_PLAYING;
         if (mediaMetadata != null && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE) != null
-                && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE).equals(mCurrent.getMetadata().getString(MediaMetadata.METADATA_KEY_TITLE)) && ctx.overlayOpen()) {
+                && mediaMetadata.getString(MediaMetadata.METADATA_KEY_TITLE).equals(targetMetada.getString(MediaMetadata.METADATA_KEY_TITLE)) && ctx.overlayOpen()) {
             if (ctx.mCurrent != null && ctx.mCurrent.getPackageName().equals(mCurrent.getPackageName())) {
                 if (!isPlaying2) ctx.onPlayerPaused(true);
                 else ctx.onPlayerResume(true);
@@ -72,7 +73,7 @@ public class MediaCallback extends MediaController.Callback {
             updateView();
             return;
         }
-        mediaMetadata = mCurrent.getMetadata();
+        mediaMetadata = targetMetada;
         ctx.closeOverlay(new CallBack() {
             @Override
             public void onFinish() {

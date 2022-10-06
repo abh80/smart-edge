@@ -116,7 +116,7 @@ public class NotificationPlugin extends BasePlugin {
 
     private void openOverlay() {
         overlayOpen = true;
-        animateChild(false, context.dpToInt(25));
+        animateChild(false, context.dpToInt(context.minHeight / 4));
     }
 
     private void closeOverlay() {
@@ -201,7 +201,7 @@ public class NotificationPlugin extends BasePlugin {
 
     @Override
     public void onDestroy() {
-        if(context != null )context.unregisterReceiver(broadcastReceiver);
+        if (context != null) context.unregisterReceiver(broadcastReceiver);
         meta = null;
     }
 
@@ -262,8 +262,8 @@ public class NotificationPlugin extends BasePlugin {
     public void onCollapse() {
         if (!expanded) return;
         expanded = false;
-        context.animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd);
-        animateChild(expanded, context.dpToInt(25));
+        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd);
+        animateChild(expanded, context.dpToInt(context.minHeight / 4));
     }
 
     @Override

@@ -232,7 +232,7 @@ public class MediaSessionPlugin extends BasePlugin {
         if (overlayOpen) return;
         overlayOpen = true;
         current_package_name = pkg_name;
-        animateChild(false, ctx.dpToInt(25));
+        animateChild(false, ctx.dpToInt(ctx.minHeight / 4));
     }
 
     private View mView;
@@ -377,8 +377,8 @@ public class MediaSessionPlugin extends BasePlugin {
     public void onCollapse() {
         if (!expanded) return;
         expanded = false;
-        ctx.animateOverlay(100, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd);
-        animateChild(false, ctx.dpToInt(25));
+        ctx.animateOverlay(ctx.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd);
+        animateChild(false, ctx.dpToInt(ctx.minHeight / 4));
     }
 
     @Override

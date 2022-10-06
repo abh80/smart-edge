@@ -58,9 +58,9 @@
 
     <LinearLayout
         android:id="@+id/blank_space"
-        android:layout_width="50dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:minWidth="10dp"
+        android:minWidth="50dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

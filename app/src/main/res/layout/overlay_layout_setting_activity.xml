@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="20dp"
@@ -12,8 +12,129 @@
         android:padding="10dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    </LinearLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/t1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/x_offset"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/seekbar_x"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/t1"
+                    android:layout_marginTop="10dp"
+                    android:value="0"
+                    android:valueFrom="-50"
+                    android:valueTo="50" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/t2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/y_offset"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/seekbar_y"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/t2"
+                    android:layout_marginTop="10dp"
+                    android:value="50"
+                    android:valueFrom="0"
+                    android:valueTo="100" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/t3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/height_of_overlay_when_shrinked"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/seekbar_h"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/t3"
+                    android:layout_marginTop="10dp"
+                    android:value="20"
+                    android:valueFrom="0"
+                    android:valueTo="100" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/t4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/minimum_width_of_overlay_when_closed"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/seekbar_w"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/t4"
+                    android:layout_marginTop="10dp"
+                    android:value="50"
+                    android:valueFrom="0"
+                    android:valueTo="200" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/t5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/space_between_icons_when_overlay_is_shrinked"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/seekbar_gap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/t5"
+                    android:layout_marginTop="10dp"
+                    android:value="10"
+                    android:valueFrom="0"
+                    android:valueTo="100" />
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/reset_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_outline_refresh_24"
+                android:text="@string/reset" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 
     <com.google.android.material.appbar.AppBarLayout
@@ -30,11 +151,11 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap|enterAlwaysCollapsed">
 
             <com.google.android.material.appbar.MaterialToolbar
-                app:navigationIcon="@drawable/ic_baseline_arrow_back_ios_24"
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?actionBarSize"
                 app:layout_collapseMode="pin"
+                app:navigationIcon="@drawable/ic_baseline_arrow_back_ios_24"
                 app:title="Settings" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
