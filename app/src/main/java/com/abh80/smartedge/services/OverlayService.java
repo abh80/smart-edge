@@ -168,11 +168,24 @@ public class OverlayService extends AccessibilityService {
         is_hwd_enabled = sharedPreferences.getBoolean("hwd_enabled", false);
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+        }
         init();
     }
 
     public int gap;
-    public Context ctx;
+    private Context ctx;
+
+    public int getAttr(int attr) {
+        final TypedValue value = new TypedValue();
+        ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, value, true);
+        return value.data;
+    }
+
+    public int statusBarHeight = 0;
+
     @SuppressLint("ClickableViewAccessibility")
     private void init() {
 
@@ -195,7 +208,7 @@ public class OverlayService extends AccessibilityService {
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         getBaseContext().setTheme(R.style.Theme_SmartEdge);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
-        ctx = DynamicColors.wrapContextIfAvailable(getBaseContext() ,  com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_DayNight);
+        ctx = DynamicColors.wrapContextIfAvailable(getBaseContext(), com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_DayNight);
         mParams.gravity = Gravity.TOP | Gravity.CENTER;
         if (y == 0) {
             y = (int) (sharedPreferences.getFloat("overlay_y", 0.67f) * 0.01f * metrics.heightPixels);

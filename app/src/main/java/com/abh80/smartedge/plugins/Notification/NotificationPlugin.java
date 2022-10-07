@@ -175,7 +175,7 @@ public class NotificationPlugin extends BasePlugin {
                 updateLayout();
                 int h = getRequiredHeight(context.metrics);
                 if (h == 0) h = 300;
-                else h = h + 150;
+                else h = h + 150 + context.statusBarHeight;
                 context.animateOverlay(h, context.metrics.widthPixels - 40, false, OverLayCallBackStart, overLayCallBackEnd);
                 int imgH = h / 2;
                 if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
@@ -216,9 +216,8 @@ public class NotificationPlugin extends BasePlugin {
             PrettyTime p = new PrettyTime();
             stringBuilder.append(p.format(new Date(since)));
             ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
-            final TypedValue value = new TypedValue();
-            context.ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, value, true);
-            ((TextView) mView.findViewById(R.id.author)).setTextColor(value.data);
+            int value = context.getAttr(androidx.appcompat.R.attr.colorPrimary);
+            ((TextView) mView.findViewById(R.id.author)).setTextColor(value);
         }
     }
 
@@ -302,7 +301,7 @@ public class NotificationPlugin extends BasePlugin {
         DisplayMetrics metrics = context.metrics;
         int h = getRequiredHeight(metrics);
         if (h == 0) h = 300;
-        else h = h + 150;
+        else h = h + 150 + context.statusBarHeight;
         StringBuilder stringBuilder = new StringBuilder();
         String name = meta.getAll().getString("name");
         if (name != null) stringBuilder.append(name).append(" • ");
