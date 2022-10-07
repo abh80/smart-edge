@@ -34,8 +34,6 @@ public class MediaCallback extends MediaController.Callback {
         if (b == null) {
             return;
         }
-//        ShapeableImageView imageView = mView.findViewById(R.id.cover);
-//        imageView.setImageBitmap(b);
         String title = mediaMetadata.getText(MediaMetadata.METADATA_KEY_TITLE).toString();
         String artist = mediaMetadata.getString(MediaMetadata.METADATA_KEY_ARTIST);
         ctx.queueUpdate(new UpdateQueueStruct(artist, title, b));
@@ -62,18 +60,17 @@ public class MediaCallback extends MediaController.Callback {
         }
 
         isPlaying = isPlaying2;
-
         if (ctx.mCurrent != null && ctx.mCurrent.getPackageName().equals(mCurrent.getPackageName())) {
             if (!isPlaying) ctx.onPlayerPaused(false);
             else ctx.onPlayerResume(false);
         }
         if (!isPlaying) return;
+        mediaMetadata = targetMetada;
         ctx.mCurrent = mCurrent;
         if (ctx.expanded) {
             updateView();
             return;
         }
-        mediaMetadata = targetMetada;
         ctx.closeOverlay(new CallBack() {
             @Override
             public void onFinish() {
