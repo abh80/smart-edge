@@ -3,6 +3,7 @@ package com.abh80.smartedge.plugins.Notification;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +50,7 @@ public class NotificationPlugin extends BasePlugin {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_POSTED")) {
                 Bundle extras = intent.getExtras();
+                if (extras.getInt("importance") == NotificationManager.IMPORTANCE_NONE) return;
                 handleNotificationUpdate(extras.getString("title"), extras.getString("body"), extras.getString("package_name"),
                         extras.getInt("id"));
             }

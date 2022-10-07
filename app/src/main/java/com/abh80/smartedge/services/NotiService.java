@@ -1,6 +1,8 @@
 package com.abh80.smartedge.services;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,10 +17,13 @@ import java.util.Optional;
 
 
 public class NotiService extends NotificationListenerService {
+    NotificationManager manager;
+
     @Override
     public void onCreate() {
         super.onCreate();
         registerReceiver(receiver, new IntentFilter(getPackageName() + ".ACTION_OPEN_CLOSE"));
+        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     private ArrayList<StatusBarNotification> notifications = new ArrayList<>();
@@ -36,6 +41,12 @@ public class NotiService extends NotificationListenerService {
         Notification notification = sbn.getNotification();
         intent.putExtra("package_name", sbn.getPackageName());
         intent.putExtra("id", sbn.getId());
+        intent.putExtra("time", sbn.getPostTime());
+        intent.putExtra("icon_large", sbn.getNotification().getLargeIcon());
+        intent.putExtra("icon_small", sbn.getNotification().getSmallIcon());
+        NotificationChannel channel = manager.getNotificationChannel(sbn.getNotification().getChannelId());
+        if (channel != null)
+            intent.putExtra("importance", channel.getImportance());
         try {
             intent.putExtra("title", notification.extras.getString("android.title"));
             intent.putExtra("body", notification.extras.getString("android.text"));

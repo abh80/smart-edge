@@ -197,7 +197,6 @@ public class OverlayService extends AccessibilityService {
         if (y == 0) {
             y = (int) (sharedPreferences.getFloat("overlay_y", 1) * 0.01f * metrics.heightPixels);
         }
-        Log.d("kek", String.valueOf(y));
         mParams.y = y;
         if (x == 0) {
             x = (int) (sharedPreferences.getFloat("overlay_x", 0) * 0.01f * metrics.widthPixels);
