@@ -256,9 +256,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     mDivider.setBounds(dpToInt(20), y, width - dpToInt(20), mDividerHeight + y);
                     mDivider.draw(c);
                 }
+                int vo = recyclerView.getChildAdapterPosition(childAt);
                 if (!viewHolder.isItem) {
-                    if (settings.size() >= i + 2) {
-                        c.drawText(settings.get(i + 1).category, cornerBounds.left + dpToInt(10), childAt.getBottom() - dpToInt(30), new Paint() {
+                    if (settings.size() >= vo + 2 && settings.get(vo + 1) != null) {
+                        c.drawText(settings.get(vo + 1).category, cornerBounds.left + dpToInt(10), childAt.getBottom() - dpToInt(30), new Paint() {
                             {
                                 setColor(MainActivity.this.getColor(R.color.quite_white));
                                 setTextSize(dpToInt(16));
