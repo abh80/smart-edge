@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingVertical="5dp"
+        android:clickable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/blank_space"
         app:layout_constraintStart_toStartOf="parent"
@@ -18,6 +19,7 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/cover"
+            android:clickable="false"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_centerVertical="true"
@@ -43,10 +45,11 @@
             android:id="@+id/cover2"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:clickable="false"
             android:layout_centerVertical="true"
-            android:src="@drawable/ic_baseline_message_24"
             android:layout_marginEnd="8dp"
             android:contentDescription="@string/cover"
+            android:src="@drawable/ic_baseline_message_24"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.circleImageView" />
 
     </RelativeLayout>
@@ -75,8 +78,28 @@
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:ignore="UselessParent">
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/author"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:freezesText="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:paddingLeft="15dip"
+                android:paddingRight="15dip"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/title"
@@ -93,7 +116,7 @@
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -106,30 +129,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:alpha="0.8"
-                android:ellipsize="marquee"
+                android:ellipsize="end"
                 android:focusable="true"
-                android:focusableInTouchMode="true"
                 android:freezesText="true"
-                android:marqueeRepeatLimit="marquee_forever"
+                android:maxLines="10"
                 android:paddingLeft="15dip"
                 android:paddingRight="15dip"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
                 android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
-<!--    <LinearLayout-->
-<!--        android:id="@+id/controls_holder"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:visibility="gone"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/progressBar">-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/controls_holder"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        android:visibility="gone"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/progressBar">-->
 
-<!--    </LinearLayout>-->
+    <!--    </LinearLayout>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

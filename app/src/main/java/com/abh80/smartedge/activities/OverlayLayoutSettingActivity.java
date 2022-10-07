@@ -46,11 +46,11 @@ public class OverlayLayoutSettingActivity extends AppCompatActivity {
         gap.addOnChangeListener((slider, value, fromUser) -> {
             if (fromUser) onChange();
         });
-        gap.setValue(sharedPreferences.getFloat("overlay_gap", 20));
-        w.setValue(sharedPreferences.getFloat("overlay_w", 20));
-        h.setValue(sharedPreferences.getFloat("overlay_h", 20));
+        gap.setValue(sharedPreferences.getFloat("overlay_gap", 50));
+        w.setValue(sharedPreferences.getFloat("overlay_w", 83));
+        h.setValue(sharedPreferences.getFloat("overlay_h", 40));
         x.setValue(sharedPreferences.getFloat("overlay_x", 0));
-        y.setValue(sharedPreferences.getFloat("overlay_y", 0));
+        y.setValue(sharedPreferences.getFloat("overlay_y", 0.67f));
 
         findViewById(R.id.reset_btn).setOnClickListener(l -> {
             gap.setValue(40);

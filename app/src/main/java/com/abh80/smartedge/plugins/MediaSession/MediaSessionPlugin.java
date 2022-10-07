@@ -307,8 +307,7 @@ public class MediaSessionPlugin extends BasePlugin {
     public void onExpand() {
         if (expanded) return;
         expanded = true;
-        DisplayMetrics metrics = new DisplayMetrics();
-        ctx.mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = ctx.metrics;
         ctx.animateOverlay(500, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd);
         animateChild(true, (int) (500 / 2.5));
     }

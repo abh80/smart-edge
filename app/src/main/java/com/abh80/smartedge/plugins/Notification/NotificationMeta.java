@@ -3,19 +3,29 @@ package com.abh80.smartedge.plugins.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.os.Bundle;
 
 public class NotificationMeta {
     private String title;
     private String description;
     private Icon icon;
     private Drawable icon_drawable;
+    private Bundle all;
 
-
-    public NotificationMeta(String title, String description, int id, Drawable icon) {
+    public NotificationMeta(String title, String description, int id, Drawable icon , Bundle all) {
         this.title = title;
         this.description = description;
         this.icon_drawable = icon;
         this.id = id;
+        this.all = all;
+    }
+
+    public Bundle getAll() {
+        return all;
+    }
+
+    public void setAll(Bundle all) {
+        this.all = all;
     }
 
     private int id;

@@ -3,17 +3,22 @@ package com.abh80.smartedge.plugins.Notification;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +37,11 @@ import com.abh80.smartedge.services.OverlayService;
 import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.imageview.ShapeableImageView;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Optional;
 
 
@@ -50,9 +59,9 @@ public class NotificationPlugin extends BasePlugin {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_POSTED")) {
                 Bundle extras = intent.getExtras();
-                if (extras.getInt("importance") == NotificationManager.IMPORTANCE_NONE) return;
+                if (Notification.CATEGORY_SYSTEM.equals(extras.getString("category"))) return;
                 handleNotificationUpdate(extras.getString("title"), extras.getString("body"), extras.getString("package_name"),
-                        extras.getInt("id"));
+                        extras.getInt("id"), extras);
             }
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_REMOVED")) {
                 int id = intent.getExtras().getInt("id");
@@ -97,19 +106,21 @@ public class NotificationPlugin extends BasePlugin {
         update();
     }
 
-    private void handleNotificationUpdate(String title, String description, String packagename, int id) {
+    private void handleNotificationUpdate(String title, String description, String packagename, int id, Bundle all) {
         if (title == null || description == null) return;
         Drawable icon_d = null;
 
         try {
             icon_d = context.getPackageManager().getApplicationIcon(packagename);
-        } catch (PackageManager.NameNotFoundException e) {
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(packagename, 0);
+            all.putString("name", (String) context.getPackageManager().getApplicationLabel(ai));
+        } catch (Exception e) {
             // do nothing lol
         }
         if (icon_d == null) {
             return;
         }
-        meta = new NotificationMeta(title, description, id, icon_d);
+        meta = new NotificationMeta(title, description, id, icon_d, all);
         Optional<NotificationMeta> meta1 = notificationArrayList.stream().filter(x -> x.getId() == id).findFirst();
         meta1.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
         notificationArrayList.add(0, meta);
@@ -148,33 +159,66 @@ public class NotificationPlugin extends BasePlugin {
             closeOverlay();
             return;
         }
-        ShapeableImageView imageView = mView.findViewById(R.id.cover);
+
         if (overlayOpen) {
-            if (mView != null) {
-                if (!expanded) {
-                    closeOverlay(new CallBack() {
-                        @Override
-                        public void onFinish() {
-                            super.onFinish();
-                            imageView.setImageDrawable(meta.getIcon_drawable());
-                            ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
-                            ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
-                            openOverlay();
-                        }
-                    });
-                } else {
-                    imageView.setImageDrawable(meta.getIcon_drawable());
-                    ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
-                    ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
-                }
+
+            if (!expanded) {
+                closeOverlay(new CallBack() {
+                    @Override
+                    public void onFinish() {
+                        super.onFinish();
+                        updateLayout();
+                        openOverlay();
+                    }
+                });
+            } else {
+                updateLayout();
+                int h = getRequiredHeight(context.metrics);
+                if (h == 0) h = 300;
+                else h = h + 150;
+                context.animateOverlay(h, context.metrics.widthPixels - 40, false, OverLayCallBackStart, overLayCallBackEnd);
+                int imgH = h / 2;
+                if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
+                animateChild(true, imgH);
             }
         } else {
-            if (mView != null) {
-                imageView.setImageDrawable(meta.getIcon_drawable());
-                ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
-                ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
-                openOverlay();
+            updateLayout();
+            openOverlay();
+
+        }
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private void updateLayout() {
+        if (mView != null && meta != null) {
+            ShapeableImageView imageView = mView.findViewById(R.id.cover);
+            ShapeableImageView imageView1 = mView.findViewById(R.id.cover2);
+            imageView1.setImageDrawable(context.getDrawable(R.drawable.ic_baseline_message_24));
+            Drawable small_i = null, large_i = null;
+            try {
+                Icon small_icon = meta.getAll().getParcelable("icon_small");
+                small_i = small_icon.loadDrawable(context);
+                Icon large_icon = meta.getAll().getParcelable("icon_large");
+                large_i = large_icon.loadDrawable(context);
+            } catch (Exception ignored) {
             }
+            if (small_i != null) {
+                imageView1.setImageDrawable(small_i);
+            }
+            if (large_i != null) imageView.setImageDrawable(large_i);
+            else imageView.setImageDrawable(meta.getIcon_drawable());
+            ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
+            ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
+            StringBuilder stringBuilder = new StringBuilder();
+            String name = meta.getAll().getString("name");
+            if (name != null) stringBuilder.append(name).append(" • ");
+            long since = meta.getAll().getLong("time");
+            PrettyTime p = new PrettyTime();
+            stringBuilder.append(p.format(new Date(since)));
+            ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
+            final TypedValue value = new TypedValue();
+            context.ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, value, true);
+            ((TextView) mView.findViewById(R.id.author)).setTextColor(value.data);
         }
     }
 
@@ -255,10 +299,33 @@ public class NotificationPlugin extends BasePlugin {
     public void onExpand() {
         if (expanded) return;
         expanded = true;
-        DisplayMetrics metrics = new DisplayMetrics();
-        context.mWindowManager.getDefaultDisplay().getMetrics(metrics);
-        context.animateOverlay(300, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd);
-        animateChild(true, (int) (500 / 4));
+        DisplayMetrics metrics = context.metrics;
+        int h = getRequiredHeight(metrics);
+        if (h == 0) h = 300;
+        else h = h + 150;
+        StringBuilder stringBuilder = new StringBuilder();
+        String name = meta.getAll().getString("name");
+        if (name != null) stringBuilder.append(name).append(" • ");
+        long since = meta.getAll().getLong("time");
+        PrettyTime p = new PrettyTime();
+        stringBuilder.append(p.format(new Date(since)));
+        ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
+        context.animateOverlay(h, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd);
+        int imgH = h / 2;
+        if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
+        animateChild(true, imgH);
+    }
+
+    private int getRequiredHeight(DisplayMetrics metrics) {
+        int h = 0;
+        if (mView != null && meta != null) {
+            View v = mView.findViewById(R.id.text_info);
+            int width = View.MeasureSpec.makeMeasureSpec(metrics.widthPixels, View.MeasureSpec.AT_MOST);
+            int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            v.measure(width, height);
+            h = v.getMeasuredHeight();
+        }
+        return h;
     }
 
     @Override

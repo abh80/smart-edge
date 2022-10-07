@@ -40,6 +40,7 @@ import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.plugins.ExportedPlugins;
 import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
+import com.google.android.material.color.DynamicColors;
 
 
 import java.time.Instant;
@@ -62,12 +63,11 @@ public class OverlayService extends AccessibilityService {
                 sharedPreferences = intent.getExtras().getBundle("settings");
                 if (mView != null && mWindowManager != null) {
                     WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) mView.getLayoutParams();
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    mWindowManager.getDefaultDisplay().getMetrics(metrics);
-                    minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 20));
-                    minHeight = dpToInt((int) sharedPreferences.getFloat("overlay_h", 20));
+
+                    minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 83));
+                    minHeight = dpToInt((int) sharedPreferences.getFloat("overlay_h", 40));
                     gap = dpToInt((int) sharedPreferences.getFloat("overlay_gap", 50));
-                    y = (int) (sharedPreferences.getFloat("overlay_y", 1) * 0.01 * metrics.heightPixels);
+                    y = (int) (sharedPreferences.getFloat("overlay_y", 0.67f) * 0.01 * metrics.heightPixels);
                     x = (int) (sharedPreferences.getFloat("overlay_x", 0) * 0.01 * metrics.widthPixels);
                     mParams.y = y;
                     mParams.x = x;
@@ -132,6 +132,7 @@ public class OverlayService extends AccessibilityService {
     private float y1, y2;
     static final int MIN_DISTANCE = 50;
     private final AtomicLong press_start = new AtomicLong();
+    public DisplayMetrics metrics = new DisplayMetrics();
 
     @Override
     public void onServiceConnected() {
@@ -166,25 +167,25 @@ public class OverlayService extends AccessibilityService {
         });
         is_hwd_enabled = sharedPreferences.getBoolean("hwd_enabled", false);
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
         init();
     }
 
     public int gap;
-
+    public Context ctx;
     @SuppressLint("ClickableViewAccessibility")
     private void init() {
-        DisplayMetrics metrics = new DisplayMetrics();
-        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+
         binded_plugin = null;
         int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         if (is_hwd_enabled) {
             flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         }
         if (minWidth == 0) {
-            minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 20));
+            minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 83));
         }
         if (minHeight == 0) {
-            minHeight = dpToInt((int) sharedPreferences.getFloat("overlay_h", 20));
+            minHeight = dpToInt((int) sharedPreferences.getFloat("overlay_h", 40));
         }
         if (gap == 0) {
             gap = dpToInt((int) sharedPreferences.getFloat("overlay_gap", 50));
@@ -192,10 +193,12 @@ public class OverlayService extends AccessibilityService {
         last_min_size = minWidth;
         WindowManager.LayoutParams mParams = getParams(minWidth, minHeight, flags);
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        getBaseContext().setTheme(R.style.Theme_SmartEdge);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
+        ctx = DynamicColors.wrapContextIfAvailable(getBaseContext() ,  com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_DayNight);
         mParams.gravity = Gravity.TOP | Gravity.CENTER;
         if (y == 0) {
-            y = (int) (sharedPreferences.getFloat("overlay_y", 1) * 0.01f * metrics.heightPixels);
+            y = (int) (sharedPreferences.getFloat("overlay_y", 0.67f) * 0.01f * metrics.heightPixels);
         }
         mParams.y = y;
         if (x == 0) {

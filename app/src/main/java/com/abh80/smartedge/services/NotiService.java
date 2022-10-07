@@ -13,20 +13,19 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 
 public class NotiService extends NotificationListenerService {
-    NotificationManager manager;
 
     @Override
     public void onCreate() {
         super.onCreate();
         registerReceiver(receiver, new IntentFilter(getPackageName() + ".ACTION_OPEN_CLOSE"));
-        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
-    private ArrayList<StatusBarNotification> notifications = new ArrayList<>();
+    private final ArrayList<StatusBarNotification> notifications = new ArrayList<>();
 
     @Override
     public void onDestroy() {
@@ -44,9 +43,7 @@ public class NotiService extends NotificationListenerService {
         intent.putExtra("time", sbn.getPostTime());
         intent.putExtra("icon_large", sbn.getNotification().getLargeIcon());
         intent.putExtra("icon_small", sbn.getNotification().getSmallIcon());
-        NotificationChannel channel = manager.getNotificationChannel(sbn.getNotification().getChannelId());
-        if (channel != null)
-            intent.putExtra("importance", channel.getImportance());
+        intent.putExtra("category", sbn.getNotification().category);
         try {
             intent.putExtra("title", notification.extras.getString("android.title"));
             intent.putExtra("body", notification.extras.getString("android.text"));
