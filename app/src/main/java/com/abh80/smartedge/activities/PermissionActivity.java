@@ -22,7 +22,7 @@ public class PermissionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_permission);
         findViewById(R.id.notification_access).setOnClickListener(l -> {
-            if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
+            if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners") != null && Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
                 Toast.makeText(this, "This permission is already enabled", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -49,7 +49,7 @@ public class PermissionActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         int checks = 0;
-        if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
+        if (Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners") != null && Settings.Secure.getString(this.getContentResolver(), "enabled_notification_listeners").contains(getApplicationContext().getPackageName())) {
             ((CheckBox) findViewById(R.id.notification_access_checkbox)).setChecked(true);
             checks++;
         }
