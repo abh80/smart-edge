@@ -228,6 +228,15 @@ public class MediaSessionPlugin extends BasePlugin {
         }
     }
 
+    private void layoutHandle(View v, int width) {
+        int width1 = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
+        int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        v.measure(width1, height);
+        v.getLayoutParams().width = v.getMeasuredWidth();
+        v.getLayoutParams().height = v.getMeasuredHeight();
+        v.setLayoutParams(v.getLayoutParams());
+    }
+
     public void openOverlay(String pkg_name) {
         if (overlayOpen) return;
         overlayOpen = true;
@@ -303,12 +312,18 @@ public class MediaSessionPlugin extends BasePlugin {
 
     }
 
+    private final CallBack onChange = new CallBack() {
+        @Override
+        public void onChange(float p) {
+        }
+    };
+
     @Override
     public void onExpand() {
         if (expanded) return;
         expanded = true;
         DisplayMetrics metrics = ctx.metrics;
-        ctx.animateOverlay(500, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd);
+        ctx.animateOverlay(500, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
         animateChild(true, (int) (500 / 2.5));
     }
 
@@ -316,17 +331,10 @@ public class MediaSessionPlugin extends BasePlugin {
         @Override
         public void onFinish() {
             super.onFinish();
-            RelativeLayout relativeLayout = mView.findViewById(R.id.relativeLayout);
-            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
+
             if (expanded) {
-                layoutParams.endToStart = ConstraintSet.UNSET;
-                layoutParams.bottomToTop = R.id.guideline_half;
-                int pad = ctx.dpToInt(20);
-                relativeLayout.setPadding(pad, pad, pad, pad);
+                mView.findViewById(R.id.blank_space).setVisibility(View.GONE);
             } else {
-                layoutParams.endToStart = R.id.blank_space;
-                layoutParams.bottomToTop = ConstraintSet.UNSET;
-                relativeLayout.setPadding(0, 0, 0, 0);
                 mHandler.removeCallbacks(r);
                 mView.findViewById(R.id.text_info).setVisibility(View.GONE);
                 mView.findViewById(R.id.controls_holder).setVisibility(View.GONE);
@@ -335,7 +343,6 @@ public class MediaSessionPlugin extends BasePlugin {
                 mView.findViewById(R.id.elapsed).setVisibility(View.GONE);
                 mView.findViewById(R.id.remaining).setVisibility(View.GONE);
             }
-            relativeLayout.setLayoutParams(layoutParams);
         }
     };
     CallBack overLayCallBackEnd = new CallBack() {
@@ -376,7 +383,7 @@ public class MediaSessionPlugin extends BasePlugin {
     public void onCollapse() {
         if (!expanded) return;
         expanded = false;
-        ctx.animateOverlay(ctx.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd);
+        ctx.animateOverlay(ctx.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
         animateChild(false, ctx.dpToInt(ctx.minHeight / 4));
     }
 
@@ -423,7 +430,7 @@ public class MediaSessionPlugin extends BasePlugin {
         View view1 = mView.findViewById(R.id.cover);
         View view2 = visualizer;
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(expanding ? 500 : 300);
+        height_anim.setDuration(300);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -434,20 +441,34 @@ public class MediaSessionPlugin extends BasePlugin {
             view2.setLayoutParams(params2);
 
             view1.setLayoutParams(params1);
+            float p = valueAnimator.getAnimatedFraction();
+            RelativeLayout relativeLayout = mView.findViewById(R.id.relativeLayout);
+            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
+            if (!expanded && p >= 0.5) {
+                layoutParams.endToStart = R.id.blank_space;
+                layoutParams.bottomToTop = ConstraintSet.UNSET;
+                relativeLayout.setPadding(0, 0, 0, 0);
+            } else if (expanded && p >= 0.5) {
+                layoutParams.endToStart = ConstraintSet.UNSET;
+                layoutParams.bottomToTop = R.id.guideline_half;
+                int pad = ctx.dpToInt(20);
+                relativeLayout.setPadding(pad, pad, pad, pad);
+            }
+            relativeLayout.setLayoutParams(layoutParams);
         });
         height_anim.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
                 if (expanding) view2.setVisibility(View.INVISIBLE);
-
+                if (expanding) visualizer.paused = true;
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 if (!expanding) view2.setVisibility(View.VISIBLE);
-
+                if (!expanding) visualizer.paused = false;
             }
         });
         if (expanding) height_anim.setInterpolator(new OvershootInterpolator(0.5f));

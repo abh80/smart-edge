@@ -28,6 +28,7 @@ public class SongVisualizer extends View {
         init();
     }
 
+    public boolean paused;
     private byte[] bytes;
 
     public void setPlayerId(int sessionID) {
@@ -45,7 +46,7 @@ public class SongVisualizer extends View {
                 public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes,
                                                   int samplingRate) {
                     SongVisualizer.this.bytes = bytes;
-                    invalidate();
+                    if (!paused) invalidate();
                 }
 
                 @Override
