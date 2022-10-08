@@ -2,6 +2,7 @@ package com.abh80.smartedge.plugins.Notification;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -16,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telecom.Call;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -176,7 +178,7 @@ public class NotificationPlugin extends BasePlugin {
                 int h = getRequiredHeight(context.metrics);
                 if (h == 0) h = 300;
                 else h = h + 150 + context.statusBarHeight;
-                context.animateOverlay(h, context.metrics.widthPixels - 40, false, OverLayCallBackStart, overLayCallBackEnd);
+                context.animateOverlay(h, context.metrics.widthPixels - 40, false, new CallBack(), new CallBack());
                 int imgH = h / 2;
                 if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
                 animateChild(true, imgH);
@@ -256,18 +258,21 @@ public class NotificationPlugin extends BasePlugin {
         @Override
         public void onFinish() {
             super.onFinish();
-            RelativeLayout relativeLayout = mView.findViewById(R.id.relativeLayout);
-            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
             if (expanded) {
-                layoutParams.endToStart = ConstraintSet.UNSET;
-                int pad = context.dpToInt(20);
-                relativeLayout.setPadding(pad, pad, pad, pad);
+                mView.findViewById(R.id.text_info).setVisibility(View.VISIBLE);
+                View v = mView.findViewById(R.id.text_info);
+                int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.EXACTLY);
+                int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                v.measure(width, height);
+                v.getLayoutParams().width = v.getMeasuredWidth();
+                v.getLayoutParams().height = v.getMeasuredHeight();
+                v.setLayoutParams(v.getLayoutParams());
+                v.setAlpha(0);
+                ObjectAnimator.ofFloat(v, "alpha", 0, 1f).setDuration(400).start();
             } else {
-                layoutParams.endToStart = R.id.blank_space;
-                relativeLayout.setPadding(0, 0, 0, 0);
-                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
+                View v = mView.findViewById(R.id.text_info);
+                ObjectAnimator.ofFloat(v, "alpha", 1f, 0).setDuration(200).start();
             }
-            relativeLayout.setLayoutParams(layoutParams);
         }
     };
     private final CallBack overLayCallBackEnd = new CallBack() {
@@ -275,11 +280,8 @@ public class NotificationPlugin extends BasePlugin {
         public void onFinish() {
             super.onFinish();
             if (expanded) {
-                mView.findViewById(R.id.text_info).setVisibility(View.VISIBLE);
-
                 mView.findViewById(R.id.title).setSelected(true);
                 mView.findViewById(R.id.text_description).setSelected(true);
-
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
                 layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
                 layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -289,6 +291,7 @@ public class NotificationPlugin extends BasePlugin {
                 layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
                 layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 mView.setLayoutParams(layoutParams);
+                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
             }
         }
     };
@@ -308,10 +311,11 @@ public class NotificationPlugin extends BasePlugin {
         long since = meta.getAll().getLong("time");
         PrettyTime p = new PrettyTime();
         stringBuilder.append(p.format(new Date(since)));
+
         ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
-        context.animateOverlay(h, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd);
-        int imgH = h / 2;
-        if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
+        context.animateOverlay(h, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd , onChange);
+
+        int imgH = context.dpToInt(50);
         animateChild(true, imgH);
     }
 
@@ -319,7 +323,7 @@ public class NotificationPlugin extends BasePlugin {
         int h = 0;
         if (mView != null && meta != null) {
             View v = mView.findViewById(R.id.text_info);
-            int width = View.MeasureSpec.makeMeasureSpec(metrics.widthPixels, View.MeasureSpec.AT_MOST);
+            int width = View.MeasureSpec.makeMeasureSpec(metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(20), View.MeasureSpec.EXACTLY);
             int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
             v.measure(width, height);
             h = v.getMeasuredHeight();
@@ -331,7 +335,7 @@ public class NotificationPlugin extends BasePlugin {
     public void onCollapse() {
         if (!expanded) return;
         expanded = false;
-        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd);
+        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
         animateChild(expanded, context.dpToInt(context.minHeight / 4));
     }
 
@@ -349,6 +353,23 @@ public class NotificationPlugin extends BasePlugin {
     public String[] permissionsRequired() {
         return null;
     }
+
+    private final CallBack onChange = new CallBack() {
+        @Override
+        public void onChange(float p) {
+            RelativeLayout relativeLayout = mView.findViewById(R.id.relativeLayout);
+            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
+            if (!expanded && p >= 0.2) {
+                layoutParams.endToStart = R.id.blank_space;
+                relativeLayout.setPadding(0, 0, 0, 0);
+            } else if (expanded && p >= 0.2) {
+                layoutParams.endToStart = ConstraintSet.UNSET;
+                int pad = context.dpToInt(20);
+                relativeLayout.setPadding(context.dpToInt(10), pad, pad, pad);
+            }
+            relativeLayout.setLayoutParams(layoutParams);
+        }
+    };
 
     private void animateChild(boolean expanding, int h) {
         View view1 = mView.findViewById(R.id.cover);

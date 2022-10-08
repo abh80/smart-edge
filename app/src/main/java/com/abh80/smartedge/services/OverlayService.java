@@ -297,14 +297,64 @@ public class OverlayService extends AccessibilityService {
         }
         ViewGroup.LayoutParams params = mView.getLayoutParams();
         ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
-        height_anim.setDuration(500);
+        height_anim.setDuration(800);
         height_anim.addUpdateListener(valueAnimator -> {
             params.height = (int) valueAnimator.getAnimatedValue();
             mWindowManager.updateViewLayout(mView, params);
         });
         ValueAnimator width_anim = ValueAnimator.ofInt(mView.getMeasuredWidth(), w);
-        width_anim.setDuration(500);
+        width_anim.setDuration(800);
         width_anim.addUpdateListener(v2 -> {
+            params.width = Math.abs((int) v2.getAnimatedValue());
+            mWindowManager.updateViewLayout(mView, params);
+        });
+        width_anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                callBackStart.onFinish();
+            }
+
+            @SuppressLint("UseCompatLoadingForDrawables")
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                callBackEnd.onFinish();
+                if (init_w == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                    params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    mWindowManager.updateViewLayout(mView, params);
+                }
+            }
+        });
+        if (w != 0) {
+            width_anim.setInterpolator(new OvershootInterpolator(1f));
+            height_anim.setInterpolator(new OvershootInterpolator(1f));
+        }
+
+        width_anim.start();
+        height_anim.start();
+    }
+
+    public void animateOverlay(int h, int w, boolean expanded, CallBack callBackStart, CallBack callBackEnd, CallBack onChange) {
+        int init_w = w;
+        if (!expanded && w == ViewGroup.LayoutParams.WRAP_CONTENT) {
+            w = last_min_size;
+            if (w < minWidth) w = minWidth;
+        }
+        if (expanded) {
+            last_min_size = mView.getMeasuredWidth();
+        }
+        ViewGroup.LayoutParams params = mView.getLayoutParams();
+        ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
+        height_anim.setDuration(800);
+        height_anim.addUpdateListener(valueAnimator -> {
+            params.height = (int) valueAnimator.getAnimatedValue();
+            mWindowManager.updateViewLayout(mView, params);
+        });
+        ValueAnimator width_anim = ValueAnimator.ofInt(mView.getMeasuredWidth(), w);
+        width_anim.setDuration(800);
+        width_anim.addUpdateListener(v2 -> {
+            onChange.onChange(v2.getAnimatedFraction());
             params.width = Math.abs((int) v2.getAnimatedValue());
             mWindowManager.updateViewLayout(mView, params);
         });
