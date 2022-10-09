@@ -8,6 +8,7 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
+        android:layout_centerVertical="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingVertical="5dp">
@@ -24,6 +25,7 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout4"
+        android:layout_centerVertical="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/blank_space"

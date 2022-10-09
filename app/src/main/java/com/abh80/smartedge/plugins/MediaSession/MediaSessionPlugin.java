@@ -325,6 +325,7 @@ public class MediaSessionPlugin extends BasePlugin {
         @Override
         public void onChange(float p) {
             float f;
+            int h = (ctx.minHeight - (ctx.minHeight / 4)) / 2;
             if (expanded) {
                 f = p;
             } else {
@@ -363,6 +364,8 @@ public class MediaSessionPlugin extends BasePlugin {
                 mView.findViewById(R.id.artist_subtitle).setSelected(true);
                 elapsedView.setVisibility(View.VISIBLE);
                 remainingView.setVisibility(View.VISIBLE);
+                ((RelativeLayout.LayoutParams) coverHolder.getLayoutParams()).removeRule(RelativeLayout.CENTER_VERTICAL);
+                coverHolder.setLayoutParams(coverHolder.getLayoutParams());
             } else {
                 mHandler.removeCallbacks(r);
                 text_info.setVisibility(View.GONE);
@@ -371,6 +374,9 @@ public class MediaSessionPlugin extends BasePlugin {
                 mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
                 elapsedView.setVisibility(View.GONE);
                 remainingView.setVisibility(View.GONE);
+
+                ((RelativeLayout.LayoutParams) coverHolder.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
+                coverHolder.setLayoutParams(coverHolder.getLayoutParams());
 
             }
         }

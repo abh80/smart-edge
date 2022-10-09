@@ -86,7 +86,7 @@ public class SongVisualizer extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        float density = 3;
+        float density = 8;
 
         if (bytes != null) {
             float barWidth = getWidth() / density;
