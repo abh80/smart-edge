@@ -175,13 +175,12 @@ public class NotificationPlugin extends BasePlugin {
                 });
             } else {
                 updateLayout();
-                int h = getRequiredHeight();
-                if (h == 0) h = 300;
+                int h = getRequiredHeight();if (h == 0) h = 300;
                 else h = h + 150 + context.statusBarHeight;
                 h += context.dpToInt(20);
                 mView.findViewById(R.id.text_info).getLayoutParams().height = h;
                 mView.findViewById(R.id.text_info).setLayoutParams(mView.findViewById(R.id.text_info).getLayoutParams());
-                context.animateOverlay(h, context.metrics.widthPixels - 40, false, new CallBack(), new CallBack());
+                context.animateOverlay(h, context.metrics.widthPixels - context.dpToInt(15), false, new CallBack(), new CallBack());
                 int imgH = h / 2;
                 if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
                 animateChild(true, imgH);
@@ -283,7 +282,7 @@ public class NotificationPlugin extends BasePlugin {
             if (expanded) {
                 View v = mView.findViewById(R.id.text_info);
                 v.setVisibility(View.VISIBLE);
-                int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.EXACTLY);
+                int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - context.dpToInt(15) - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.EXACTLY);
                 int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
                 v.measure(width, height);
                 v.getLayoutParams().width = v.getMeasuredWidth();
@@ -322,7 +321,7 @@ public class NotificationPlugin extends BasePlugin {
                     else h = h + 150 + context.statusBarHeight;
                     h += context.dpToInt(20);
                     shouldRedraw = false;
-                    context.animateOverlay(h, context.metrics.widthPixels - 40, false, new CallBack(), new CallBack());
+                    context.animateOverlay(h, context.metrics.widthPixels - context.dpToInt(15), false, new CallBack(), new CallBack());
                 }
             } else {
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
@@ -343,7 +342,7 @@ public class NotificationPlugin extends BasePlugin {
         if (h == 0) h = 300;
         else h = h + 150 + context.statusBarHeight;
         h += context.dpToInt(20);
-        context.animateOverlay(h, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
+        context.animateOverlay(h, metrics.widthPixels - context.dpToInt(15), expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
         int imgH = context.dpToInt(50);
         animateChild(true, imgH);
     }
@@ -358,7 +357,7 @@ public class NotificationPlugin extends BasePlugin {
                 return 0;
             }
             ;
-            int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.AT_MOST);
+            int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - context.dpToInt(15) - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.AT_MOST);
             int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
             v.measure(width, height);
             h = v.getMeasuredHeight();

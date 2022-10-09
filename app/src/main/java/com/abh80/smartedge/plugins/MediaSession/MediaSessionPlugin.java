@@ -21,12 +21,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
@@ -93,13 +91,13 @@ public class MediaSessionPlugin extends BasePlugin {
     }
 
     public void closeOverlay() {
-        animateChild(false, 0);
+        animateChild(0, new CallBack());
         overlayOpen = false;
         shouldRemoveOverlay();
     }
 
     public void closeOverlay(CallBack callBack) {
-        animateChild(false, 0, callBack);
+        animateChild(0, callBack);
         overlayOpen = false;
     }
 
@@ -202,6 +200,7 @@ public class MediaSessionPlugin extends BasePlugin {
         ctx = context;
         mHandler = new Handler(context.getMainLooper());
         mView = LayoutInflater.from(context).inflate(R.layout.media_session_layout, null);
+        mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
         init();
 
         mediaSessionManager = (MediaSessionManager) ctx.getSystemService(Context.MEDIA_SESSION_SERVICE);
@@ -241,19 +240,24 @@ public class MediaSessionPlugin extends BasePlugin {
         if (overlayOpen) return;
         overlayOpen = true;
         current_package_name = pkg_name;
-        animateChild(false, ctx.dpToInt(ctx.minHeight / 4));
+        animateChild(ctx.dpToInt(ctx.minHeight / 4), new CallBack());
     }
 
     private View mView;
+    private ShapeableImageView cover;
 
     private void init() {
         seekBar = mView.findViewById(R.id.progressBar);
         elapsedView = mView.findViewById(R.id.elapsed);
         remainingView = mView.findViewById(R.id.remaining);
-        mView.findViewById(R.id.blank_space).setMinimumWidth(300);
         pause_play = mView.findViewById(R.id.pause_play);
         ImageView next = mView.findViewById(R.id.next_play);
         ImageView back = mView.findViewById(R.id.back_play);
+        cover = mView.findViewById(R.id.cover);
+        coverHolder = mView.findViewById(R.id.relativeLayout);
+        text_info = mView.findViewById(R.id.text_info);
+        controls_holder = mView.findViewById(R.id.controls_holder);
+
         pause_play.setOnClickListener(l -> {
             if (mCurrent == null) return;
             if (mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PAUSED) {
@@ -312,9 +316,18 @@ public class MediaSessionPlugin extends BasePlugin {
 
     }
 
+    RelativeLayout coverHolder;
     private final CallBack onChange = new CallBack() {
         @Override
         public void onChange(float p) {
+            float f;
+            if (expanded) {
+                f = p;
+            } else {
+                f = 1 - p;
+            }
+            mView.setPadding(0, (int) (f * ctx.statusBarHeight), 0, 0);
+            ((RelativeLayout.LayoutParams) coverHolder.getLayoutParams()).leftMargin = (int) (f * ctx.dpToInt(20));
         }
     };
 
@@ -323,25 +336,38 @@ public class MediaSessionPlugin extends BasePlugin {
         if (expanded) return;
         expanded = true;
         DisplayMetrics metrics = ctx.metrics;
-        ctx.animateOverlay(500, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
-        animateChild(true, (int) (500 / 2.5));
+        ctx.animateOverlay(ctx.dpToInt(210), metrics.widthPixels - ctx.dpToInt(15), expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
+        animateChild(true, ctx.dpToInt(76));
+
     }
 
+    LinearLayout text_info;
+    LinearLayout controls_holder;
     CallBack OverLayCallBackStart = new CallBack() {
         @Override
         public void onFinish() {
             super.onFinish();
-
             if (expanded) {
                 mView.findViewById(R.id.blank_space).setVisibility(View.GONE);
+                ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
+                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                text_info.setVisibility(View.VISIBLE);
+                controls_holder.setVisibility(View.VISIBLE);
+                seekBar.setVisibility(View.VISIBLE);
+                mView.findViewById(R.id.title).setSelected(true);
+                mView.findViewById(R.id.artist_subtitle).setSelected(true);
+                elapsedView.setVisibility(View.VISIBLE);
+                remainingView.setVisibility(View.VISIBLE);
             } else {
                 mHandler.removeCallbacks(r);
-                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
-                mView.findViewById(R.id.controls_holder).setVisibility(View.GONE);
-                mView.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                text_info.setVisibility(View.GONE);
+                controls_holder.setVisibility(View.GONE);
+                seekBar.setVisibility(View.GONE);
                 mView.findViewById(R.id.blank_space).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.elapsed).setVisibility(View.GONE);
-                mView.findViewById(R.id.remaining).setVisibility(View.GONE);
+                elapsedView.setVisibility(View.GONE);
+                remainingView.setVisibility(View.GONE);
+
             }
         }
     };
@@ -351,13 +377,8 @@ public class MediaSessionPlugin extends BasePlugin {
         public void onFinish() {
             super.onFinish();
             if (expanded) {
-                mView.findViewById(R.id.text_info).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.controls_holder).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.title).setSelected(true);
-                mView.findViewById(R.id.artist_subtitle).setSelected(true);
-                mView.findViewById(R.id.elapsed).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.remaining).setVisibility(View.VISIBLE);
+                mView.setPadding(0, ctx.statusBarHeight, 0, 0);
+                ((RelativeLayout.LayoutParams) coverHolder.getLayoutParams()).leftMargin = ctx.dpToInt(20);
                 if (mCurrent != null && mCurrent.getPlaybackState() != null) {
                     if (mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
                         pause_play.setImageDrawable(ctx.getDrawable(R.drawable.pause));
@@ -365,16 +386,19 @@ public class MediaSessionPlugin extends BasePlugin {
                         pause_play.setImageDrawable(ctx.getDrawable(R.drawable.play));
                     }
                 }
-                ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
-                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-                mView.setLayoutParams(layoutParams);
                 mHandler.post(r);
+                text_info.setAlpha(1);
+                controls_holder.setAlpha(1);
+                seekBar.setAlpha(1);
+                elapsedView.setAlpha(1);
+                remainingView.setAlpha(1);
             } else {
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
                 layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
                 layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 mView.setLayoutParams(layoutParams);
+                mView.setPadding(0, 0, 0, 0);
+                ((RelativeLayout.LayoutParams) coverHolder.getLayoutParams()).leftMargin = 0;
             }
         }
     };
@@ -419,7 +443,7 @@ public class MediaSessionPlugin extends BasePlugin {
         ctx.enqueue(this);
         TextView titleView = mView.findViewById(R.id.title);
         TextView artistView = mView.findViewById(R.id.artist_subtitle);
-        ShapeableImageView imageView = mView.findViewById(R.id.cover);
+        ShapeableImageView imageView = cover;
         titleView.setText(queueStruct.getTitle());
         artistView.setText(queueStruct.getArtist());
         imageView.setImageBitmap(queueStruct.getCover());
@@ -427,59 +451,11 @@ public class MediaSessionPlugin extends BasePlugin {
 
 
     private void animateChild(boolean expanding, int h) {
-        View view1 = mView.findViewById(R.id.cover);
+        View view1 = cover;
         View view2 = visualizer;
+
         ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(300);
-        height_anim.addUpdateListener(valueAnimator -> {
-            ViewGroup.LayoutParams params1 = view1.getLayoutParams();
-            ViewGroup.LayoutParams params2 = view2.getLayoutParams();
-            params1.height = (int) valueAnimator.getAnimatedValue();
-            params1.width = (int) valueAnimator.getAnimatedValue();
-            params2.height = (int) valueAnimator.getAnimatedValue();
-            params2.width = (int) valueAnimator.getAnimatedValue();
-            view2.setLayoutParams(params2);
-
-            view1.setLayoutParams(params1);
-            float p = valueAnimator.getAnimatedFraction();
-            RelativeLayout relativeLayout = mView.findViewById(R.id.relativeLayout);
-            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
-            if (!expanded && p >= 0.5) {
-                layoutParams.endToStart = R.id.blank_space;
-                layoutParams.bottomToTop = ConstraintSet.UNSET;
-                relativeLayout.setPadding(0, 0, 0, 0);
-            } else if (expanded && p >= 0.5) {
-                layoutParams.endToStart = ConstraintSet.UNSET;
-                layoutParams.bottomToTop = R.id.guideline_half;
-                int pad = ctx.dpToInt(20);
-                relativeLayout.setPadding(pad, pad, pad, pad);
-            }
-            relativeLayout.setLayoutParams(layoutParams);
-        });
-        height_anim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                super.onAnimationStart(animation);
-                if (expanding) view2.setVisibility(View.INVISIBLE);
-                if (expanding) visualizer.paused = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                if (!expanding) view2.setVisibility(View.VISIBLE);
-                if (!expanding) visualizer.paused = false;
-            }
-        });
-        if (expanding) height_anim.setInterpolator(new OvershootInterpolator(0.5f));
-        height_anim.start();
-    }
-
-    private void animateChild(boolean expanding, int h, CallBack callback) {
-        View view1 = mView.findViewById(R.id.cover);
-        View view2 = visualizer;
-        ValueAnimator height_anim = ValueAnimator.ofInt(view1.getHeight(), h);
-        height_anim.setDuration(expanding ? 500 : 300);
+        height_anim.setDuration(500);
         height_anim.addUpdateListener(valueAnimator -> {
             ViewGroup.LayoutParams params1 = view1.getLayoutParams();
             ViewGroup.LayoutParams params2 = view2.getLayoutParams();
@@ -494,18 +470,61 @@ public class MediaSessionPlugin extends BasePlugin {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                if (!expanding) view2.setVisibility(View.VISIBLE);
-                callback.onFinish();
+                if (!expanding) {
+                    view2.setVisibility(View.VISIBLE);
+                    visualizer.paused = false;
+                }
             }
 
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
-                if (expanding) view2.setVisibility(View.INVISIBLE);
+                if (expanding) {
+                    view2.setVisibility(View.GONE);
+                    visualizer.paused = true;
+                }
             }
         });
         height_anim.setInterpolator(new OvershootInterpolator(0.5f));
         height_anim.start();
+
+
+    }
+
+    private void animateChild(int h, CallBack callback) {
+        View view1 = cover;
+        View view2 = visualizer;
+        ViewGroup.LayoutParams params1 = view1.getLayoutParams();
+        ViewGroup.LayoutParams params2 = view2.getLayoutParams();
+        params1.height = h;
+        params2.height = h;
+        params1.width = h;
+        params2.width = h;
+        view1.setScaleY(0);
+        view1.setScaleX(0);
+        view2.setScaleX(0);
+        view2.setScaleY(0);
+        view1.setLayoutParams(params1);
+        view2.setLayoutParams(params2);
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(h != 0 ? 0 : 1, h != 0 ? 1 : 0);
+        valueAnimator.addUpdateListener(l -> {
+            float f = (float) l.getAnimatedValue();
+            view1.setScaleX(f);
+            view1.setScaleY(f);
+            view2.setScaleX(f);
+            view2.setScaleY(f);
+        });
+        valueAnimator.setDuration(300);
+        valueAnimator.start();
+        valueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                callback.onFinish();
+            }
+        });
+
+
     }
 
 }

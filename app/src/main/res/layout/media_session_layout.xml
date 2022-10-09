@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/binded"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:id="@+id/binded">
+    android:layout_height="wrap_content">
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingVertical="5dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/blank_space"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:paddingVertical="5dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/cover"
@@ -28,16 +24,13 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout4"
-        tools:ignore="RtlSymmetry,UselessLeaf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/blank_space"
         android:clickable="false"
         android:focusable="false"
         android:paddingVertical="5dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/blank_space"
-        app:layout_constraintTop_toTopOf="parent">
+        tools:ignore="RtlSymmetry,UselessLeaf">
 
         <com.abh80.smartedge.plugins.MediaSession.SongVisualizer
             android:id="@+id/visualizer"
@@ -49,12 +42,6 @@
 
     </RelativeLayout>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_half"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.7" />
 
     <LinearLayout
         android:id="@+id/blank_space"
@@ -62,25 +49,22 @@
         android:layout_height="match_parent"
         android:minWidth="50dp"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/text_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_marginEnd="20dp"
+        android:layout_toEndOf="@id/relativeLayout"
         android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/guideline_half"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/relativeLayout"
-        app:layout_constraintTop_toTopOf="parent">
+        android:visibility="gone">
 
         <LinearLayout
-            tools:ignore="UselessParent"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            tools:ignore="UselessParent">
 
             <TextView
                 android:id="@+id/title"
@@ -101,9 +85,9 @@
         </LinearLayout>
 
         <LinearLayout
-            tools:ignore="UselessParent"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            tools:ignore="UselessParent">
 
             <TextView
                 android:id="@+id/artist_subtitle"
@@ -129,52 +113,50 @@
         android:id="@+id/elapsed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/relativeLayout"
         android:layout_marginStart="31dp"
         android:layout_marginBottom="3dp"
         android:text="1:19"
         android:textColor="@color/not_quite_white"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_half"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:visibility="gone" />
 
     <SeekBar
         android:id="@+id/progressBar"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="0dp"
         android:layout_height="10dp"
+        android:layout_below="@id/relativeLayout"
         android:layout_marginHorizontal="10dp"
         android:layout_marginBottom="6dp"
+        android:layout_toStartOf="@id/remaining"
+        android:layout_toEndOf="@id/elapsed"
         android:progress="50"
+        android:layout_marginTop="10dp"
         android:progressDrawable="@drawable/custom_progress_bar_horizontal"
         android:scaleY="0.8"
         android:thumb="@color/transparent"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_half"
-        app:layout_constraintEnd_toStartOf="@+id/remaining"
-        app:layout_constraintStart_toEndOf="@+id/elapsed" />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/remaining"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/relativeLayout"
+        android:layout_alignParentEnd="true"
         android:layout_marginEnd="31dp"
         android:layout_marginBottom="3dp"
         android:text="-1:19"
         android:textColor="@color/not_quite_white"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_half"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/controls_holder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/progressBar"
+        android:layout_centerHorizontal="true"
         android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/progressBar">
+        android:visibility="gone">
 
         <ImageButton
             android:id="@+id/back_play"
@@ -206,4 +188,4 @@
             android:scaleType="fitXY"
             android:src="@drawable/fast_forward" />
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>
