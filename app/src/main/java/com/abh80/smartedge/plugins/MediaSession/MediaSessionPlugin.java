@@ -107,8 +107,12 @@ public class MediaSessionPlugin extends BasePlugin {
 
     public MediaController getActiveCurrent(List<MediaController> mediaControllers) {
         if (mediaControllers.size() == 0) return null;
-        Optional<MediaController> controller = mediaControllers.stream().filter(x -> x.getPlaybackState().getState() == PlaybackState.STATE_PLAYING).findFirst();
-        return controller.orElse(null);
+        try {
+            Optional<MediaController> controller = mediaControllers.stream().filter(x -> x.getPlaybackState().getState() == PlaybackState.STATE_PLAYING).findFirst();
+            return controller.orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private boolean isColorDark(int color) {
