@@ -9,8 +9,8 @@ android {
         applicationId "com.abh80.smartedge"
         minSdk 26
         targetSdk 32
-        versionCode 20108
-        versionName "2.1-alpha8"
+        versionCode 20109
+        versionName "2.1-alpha9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
