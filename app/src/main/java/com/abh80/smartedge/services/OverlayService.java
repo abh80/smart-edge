@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class OverlayService extends AccessibilityService {
 
-    private boolean is_hwd_enabled = false;
     private final ArrayList<BasePlugin> plugins = ExportedPlugins.getPlugins();
     public int minHeight;
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -129,7 +128,7 @@ public class OverlayService extends AccessibilityService {
                 PixelFormat.TRANSLUCENT);
     }
 
-    private float y1, y2;
+    private float y1, y2, x1, x2;
     static final int MIN_DISTANCE = 50;
     private final AtomicLong press_start = new AtomicLong();
     public DisplayMetrics metrics = new DisplayMetrics();
@@ -165,7 +164,6 @@ public class OverlayService extends AccessibilityService {
                 sharedPreferences.putFloat(key, (float) value);
             }
         });
-        is_hwd_enabled = sharedPreferences.getBoolean("hwd_enabled", false);
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
@@ -191,9 +189,9 @@ public class OverlayService extends AccessibilityService {
 
         binded_plugin = null;
         int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        if (is_hwd_enabled) {
-            flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
-        }
+
+        flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+
         if (minWidth == 0) {
             minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 83));
         }
@@ -234,6 +232,7 @@ public class OverlayService extends AccessibilityService {
                 mHandler.postDelayed(mLongPressed, ViewConfiguration.getLongPressTimeout());
                 press_start.set(Instant.now().toEpochMilli());
                 y1 = event.getY();
+                x1 = event.getX();
             }
 
             if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
@@ -242,11 +241,21 @@ public class OverlayService extends AccessibilityService {
             if ((event.getAction() == MotionEvent.ACTION_UP)) {
                 mHandler.removeCallbacks(mLongPressed);
                 y2 = event.getY();
+                x2 = event.getX();
                 float deltaY = y2 - y1;
+                float deltaX = x2 - x1;
+                if (Math.abs(deltaX) > MIN_DISTANCE) {
+                    if (binded_plugin != null) {
+                        if (deltaX < 0) {
+                            binded_plugin.onLeftSwipe();
+                        } else binded_plugin.onRightSwipe();
+                    }
+                }
                 if (-deltaY > MIN_DISTANCE) {
                     shrinkOverlay();
                     return false;
-                } else {
+                }
+                if (Math.abs(deltaX) < MIN_DISTANCE && -deltaY < MIN_DISTANCE) {
                     if (press_start.get() + ViewConfiguration.getLongPressTimeout() > Instant.now().toEpochMilli())
                         if (binded_plugin != null) {
                             if (sharedPreferences.getBoolean("invert_click", false))

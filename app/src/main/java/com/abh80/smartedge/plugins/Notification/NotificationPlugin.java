@@ -6,22 +6,18 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
-import android.telecom.Call;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -31,17 +27,19 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.viewpager.widget.ViewPager;
 
 import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.OverlayService;
+import com.abh80.smartedge.utils.NotificationViewPagerAdapter;
 import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.tabs.TabLayout;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
@@ -105,6 +103,7 @@ public class NotificationPlugin extends BasePlugin {
         to_remove.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
         if (notificationArrayList.size() > 0) meta = notificationArrayList.get(0);
         else meta = null;
+        if (adapter != null) adapter.notifyDataSetChanged();
         update();
     }
 
@@ -126,6 +125,7 @@ public class NotificationPlugin extends BasePlugin {
         Optional<NotificationMeta> meta1 = notificationArrayList.stream().filter(x -> x.getId() == id).findFirst();
         meta1.ifPresent(notificationMeta -> notificationArrayList.remove(notificationMeta));
         notificationArrayList.add(0, meta);
+        if (adapter != null) adapter.notifyDataSetChanged();
         context.enqueue(this);
         update();
     }
@@ -175,9 +175,12 @@ public class NotificationPlugin extends BasePlugin {
                 });
             } else {
                 updateLayout();
-                int h = getRequiredHeight(context.metrics);
+                int h = getRequiredHeight();
                 if (h == 0) h = 300;
                 else h = h + 150 + context.statusBarHeight;
+                h += context.dpToInt(20);
+                mView.findViewById(R.id.text_info).getLayoutParams().height = h;
+                mView.findViewById(R.id.text_info).setLayoutParams(mView.findViewById(R.id.text_info).getLayoutParams());
                 context.animateOverlay(h, context.metrics.widthPixels - 40, false, new CallBack(), new CallBack());
                 int imgH = h / 2;
                 if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
@@ -209,20 +212,29 @@ public class NotificationPlugin extends BasePlugin {
             }
             if (large_i != null) imageView.setImageDrawable(large_i);
             else imageView.setImageDrawable(meta.getIcon_drawable());
-            ((TextView) mView.findViewById(R.id.title)).setText(meta.getTitle());
-            ((TextView) mView.findViewById(R.id.text_description)).setText(meta.getDescription());
-            StringBuilder stringBuilder = new StringBuilder();
-            String name = meta.getAll().getString("name");
-            if (name != null) stringBuilder.append(name).append(" • ");
-            long since = meta.getAll().getLong("time");
-            PrettyTime p = new PrettyTime();
-            stringBuilder.append(p.format(new Date(since)));
-            ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
-            int value = context.getAttr(androidx.appcompat.R.attr.colorPrimary);
-            ((TextView) mView.findViewById(R.id.author)).setTextColor(value);
         }
     }
 
+    NotificationViewPagerAdapter adapter;
+    private final ViewPager.SimpleOnPageChangeListener listener = new ViewPager.SimpleOnPageChangeListener() {
+        public void onPageSelected(int position) {
+            meta = notificationArrayList.get(position);
+            ViewPager pager = mView.findViewById(R.id.text_info);
+            View v = (View) pager.findViewWithTag("mv_" + pager.getCurrentItem());
+            if (v != null) {
+                StringBuilder stringBuilder = new StringBuilder();
+                String name = meta.getAll().getString("name");
+                if (name != null) stringBuilder.append(name).append(" • ");
+                long since = meta.getAll().getLong("time");
+                PrettyTime p = new PrettyTime();
+                stringBuilder.append(p.format(new Date(since)));
+                ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
+            }
+            update();
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onBind() {
         mView = LayoutInflater.from(context).inflate(R.layout.notification_layout, null);
@@ -230,6 +242,14 @@ public class NotificationPlugin extends BasePlugin {
             context.dequeue(this);
             return mView;
         }
+        if (adapter == null)
+            adapter = new NotificationViewPagerAdapter(notificationArrayList, context);
+        ViewPager pager = mView.findViewById(R.id.text_info);
+        pager.setAdapter(adapter);
+        pager.addOnPageChangeListener(listener);
+        pager.setClickable(false);
+        TabLayout tabLayout = (TabLayout) mView.findViewById(R.id.tab_layout);
+        tabLayout.setupWithViewPager(pager, true);
         update();
         return mView;
     }
@@ -243,6 +263,8 @@ public class NotificationPlugin extends BasePlugin {
     @Override
     public void onUnbind() {
         closeOverlay();
+        if (mView != null)
+            ((ViewPager) mView.findViewById(R.id.text_info)).removeOnPageChangeListener(listener);
         mView = null;
         overlayOpen = false;
     }
@@ -259,39 +281,54 @@ public class NotificationPlugin extends BasePlugin {
         public void onFinish() {
             super.onFinish();
             if (expanded) {
-                mView.findViewById(R.id.text_info).setVisibility(View.VISIBLE);
                 View v = mView.findViewById(R.id.text_info);
+                v.setVisibility(View.VISIBLE);
                 int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.EXACTLY);
                 int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
                 v.measure(width, height);
                 v.getLayoutParams().width = v.getMeasuredWidth();
-                v.getLayoutParams().height = v.getMeasuredHeight();
                 v.setLayoutParams(v.getLayoutParams());
                 v.setAlpha(0);
                 ObjectAnimator.ofFloat(v, "alpha", 0, 1f).setDuration(400).start();
             } else {
                 View v = mView.findViewById(R.id.text_info);
                 ObjectAnimator.ofFloat(v, "alpha", 1f, 0).setDuration(200).start();
+                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
+                mView.findViewById(R.id.tab_layout).setVisibility(View.GONE);
             }
         }
     };
+    private boolean shouldRedraw;
+
+    @Override
+    public void onRightSwipe() {
+        if (meta != null && !expanded) {
+            Intent i = new Intent(context.getPackageName() + ".ACTION_CLOSE");
+            i.putExtra("id", meta.getId());
+            context.sendBroadcast(i);
+            handleNotificationUpdate(meta.getId());
+        }
+    }
+
     private final CallBack overLayCallBackEnd = new CallBack() {
         @Override
         public void onFinish() {
             super.onFinish();
             if (expanded) {
-                mView.findViewById(R.id.title).setSelected(true);
-                mView.findViewById(R.id.text_description).setSelected(true);
-                ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
-                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-                mView.setLayoutParams(layoutParams);
+                mView.findViewById(R.id.tab_layout).setVisibility(View.VISIBLE);
+                if (shouldRedraw) {
+                    int h = getRequiredHeight();
+                    if (h == 0) h = 300;
+                    else h = h + 150 + context.statusBarHeight;
+                    h += context.dpToInt(20);
+                    shouldRedraw = false;
+                    context.animateOverlay(h, context.metrics.widthPixels - 40, false, new CallBack(), new CallBack());
+                }
             } else {
                 ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
                 layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
                 layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 mView.setLayoutParams(layoutParams);
-                mView.findViewById(R.id.text_info).setVisibility(View.GONE);
             }
         }
     };
@@ -302,28 +339,26 @@ public class NotificationPlugin extends BasePlugin {
         if (expanded) return;
         expanded = true;
         DisplayMetrics metrics = context.metrics;
-        int h = getRequiredHeight(metrics);
+        int h = getRequiredHeight();
         if (h == 0) h = 300;
         else h = h + 150 + context.statusBarHeight;
-        StringBuilder stringBuilder = new StringBuilder();
-        String name = meta.getAll().getString("name");
-        if (name != null) stringBuilder.append(name).append(" • ");
-        long since = meta.getAll().getLong("time");
-        PrettyTime p = new PrettyTime();
-        stringBuilder.append(p.format(new Date(since)));
-
-        ((TextView) mView.findViewById(R.id.author)).setText(stringBuilder.toString());
-        context.animateOverlay(h, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd , onChange);
-
+        h += context.dpToInt(20);
+        context.animateOverlay(h, metrics.widthPixels - 40, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
         int imgH = context.dpToInt(50);
         animateChild(true, imgH);
     }
 
-    private int getRequiredHeight(DisplayMetrics metrics) {
+    private int getRequiredHeight() {
         int h = 0;
         if (mView != null && meta != null) {
-            View v = mView.findViewById(R.id.text_info);
-            int width = View.MeasureSpec.makeMeasureSpec(metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(20), View.MeasureSpec.EXACTLY);
+            ViewPager pager = mView.findViewById(R.id.text_info);
+            View v = (View) pager.findViewWithTag("mv_" + pager.getCurrentItem());
+            if (v == null) {
+                shouldRedraw = true;
+                return 0;
+            }
+            ;
+            int width = View.MeasureSpec.makeMeasureSpec(context.metrics.widthPixels - 40 - context.dpToInt(50) - context.dpToInt(10), View.MeasureSpec.AT_MOST);
             int height = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
             v.measure(width, height);
             h = v.getMeasuredHeight();
@@ -359,13 +394,20 @@ public class NotificationPlugin extends BasePlugin {
         public void onChange(float p) {
             RelativeLayout relativeLayout = mView.findViewById(R.id.relativeLayout);
             ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) relativeLayout.getLayoutParams();
+            ConstraintSet constraintSet = new ConstraintSet();
+            constraintSet.clone((ConstraintLayout) relativeLayout.getParent());
             if (!expanded && p >= 0.2) {
                 layoutParams.endToStart = R.id.blank_space;
+                constraintSet.connect(R.id.relativeLayout, ConstraintSet.BOTTOM, ((ConstraintLayout) relativeLayout.getParent()).getId(), ConstraintSet.BOTTOM, 0);
                 relativeLayout.setPadding(0, 0, 0, 0);
+                mView.setPadding(0, 0, 0, 0);
+                constraintSet.applyTo((ConstraintLayout) relativeLayout.getParent());
             } else if (expanded && p >= 0.2) {
                 layoutParams.endToStart = ConstraintSet.UNSET;
                 int pad = context.dpToInt(20);
                 relativeLayout.setPadding(context.dpToInt(10), pad, pad, pad);
+                layoutParams.bottomToBottom = ConstraintSet.UNSET;
+                mView.setPadding(0, context.statusBarHeight, 0, 0);
             }
             relativeLayout.setLayoutParams(layoutParams);
         }

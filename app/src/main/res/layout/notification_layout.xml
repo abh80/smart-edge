@@ -10,8 +10,8 @@
         android:id="@+id/relativeLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingVertical="5dp"
         android:clickable="false"
+        android:paddingVertical="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/blank_space"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,11 +19,11 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/cover"
-            android:clickable="false"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_centerVertical="true"
             android:layout_marginStart="8dp"
+            android:clickable="false"
             android:contentDescription="@string/cover"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.circleImageView" />
     </RelativeLayout>
@@ -45,9 +45,9 @@
             android:id="@+id/cover2"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:clickable="false"
             android:layout_centerVertical="true"
             android:layout_marginEnd="8dp"
+            android:clickable="false"
             android:contentDescription="@string/cover"
             android:src="@drawable/ic_baseline_message_24"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.circleImageView" />
@@ -64,81 +64,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <LinearLayout
+    <com.abh80.smartedge.utils.ViewPagerOnClickable
         android:id="@+id/text_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
-        android:orientation="vertical"
+        android:paddingHorizontal="10dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+
         app:layout_constraintStart_toEndOf="@id/relativeLayout"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/author"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="marquee"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:freezesText="true"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:paddingLeft="15dip"
-                android:paddingRight="15dip"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="marquee"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:freezesText="true"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:paddingLeft="15dip"
-                android:paddingRight="15dip"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:ignore="UselessParent">
-
-            <TextView
-                android:id="@+id/text_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:alpha="0.8"
-                android:ellipsize="end"
-                android:focusable="true"
-                android:freezesText="true"
-                android:maxLines="10"
-                android:paddingLeft="15dip"
-                android:paddingRight="15dip"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </LinearLayout>
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:background="@android:color/transparent"
+        android:layout_width="wrap_content"
+        android:layout_height="10dp"
+        app:tabBackground="@drawable/tab_selector"
+        app:tabGravity="center"
+        app:tabIndicatorHeight="0dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
     <!--    <LinearLayout-->
     <!--        android:id="@+id/controls_holder"-->
     <!--        android:layout_width="wrap_content"-->

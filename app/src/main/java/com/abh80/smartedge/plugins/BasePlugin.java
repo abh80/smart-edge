@@ -35,6 +35,6 @@ public abstract class BasePlugin {
 
     public void onBindComplete() {
     }
-
-    ;
+    public void onRightSwipe(){}
+    public void onLeftSwipe(){}
 }

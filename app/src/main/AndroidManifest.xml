@@ -23,6 +23,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:hardwareAccelerated="true"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -44,6 +45,7 @@
 
         <activity
             android:name=".activities.MainActivity"
+            android:hardwareAccelerated="false"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -52,9 +54,11 @@
         </activity>
         <activity
             android:name=".activities.PermissionActivity"
+            android:hardwareAccelerated="false"
             android:exported="false" />
         <activity
             android:name=".activities.OverlayLayoutSettingActivity"
+            android:hardwareAccelerated="false"
             android:exported="false" />
 
         <service

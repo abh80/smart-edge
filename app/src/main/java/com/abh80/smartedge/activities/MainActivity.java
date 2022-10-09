@@ -75,17 +75,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             startActivity(intent);
             Toast.makeText(this, "Installed Apps -> Smart Edge", Toast.LENGTH_SHORT).show();
         });
-        settings.add(new SettingStruct("Enable Hardware Acceleration", "App Settings") {
-            @Override
-            public boolean onAttach() {
-                return sharedPreferences.getBoolean("hwd_enabled", false);
-            }
-
-            @Override
-            public void onCheckChanged(boolean checked) {
-                sharedPreferences.edit().putBoolean("hwd_enabled", checked).apply();
-            }
-        });
         settings.add(new SettingStruct("Manage Overlay Layout", "App Settings", SettingStruct.TYPE_CUSTOM) {
             @Override
             public void onClick() {

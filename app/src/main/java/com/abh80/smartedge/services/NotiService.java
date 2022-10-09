@@ -22,7 +22,9 @@ public class NotiService extends NotificationListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-        registerReceiver(receiver, new IntentFilter(getPackageName() + ".ACTION_OPEN_CLOSE"));
+        IntentFilter filter = new IntentFilter(getPackageName() + ".ACTION_OPEN_CLOSE");
+        filter.addAction(getPackageName() + ".ACTION_CLOSE");
+        registerReceiver(receiver, filter);
     }
 
     private final ArrayList<StatusBarNotification> notifications = new ArrayList<>();
@@ -72,12 +74,26 @@ public class NotiService extends NotificationListenerService {
                     try {
                         if (x.getNotification().deleteIntent != null) {
                             x.getNotification().deleteIntent.send();
+                        } else {
+                            cancelNotification(x.getKey());
                         }
                         if (x.getNotification().contentIntent != null) {
                             x.getNotification().contentIntent.send();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (Exception ignored) {
+                    }
+                });
+            }
+            if (intent.getAction().equals(context.getPackageName() + ".ACTION_CLOSE")) {
+                Optional<StatusBarNotification> n = notifications.stream().filter(x -> x.getId() == intent.getExtras().getInt("id")).findFirst();
+                n.ifPresent(x -> {
+                    try {
+                        if (x.getNotification().deleteIntent != null) {
+                            x.getNotification().deleteIntent.send();
+                        } else {
+                            cancelNotification(x.getKey());
+                        }
+                    } catch (Exception ignored) {
                     }
                 });
             }
