@@ -325,7 +325,6 @@ public class MediaSessionPlugin extends BasePlugin {
         @Override
         public void onChange(float p) {
             float f;
-            int h = (ctx.minHeight - (ctx.minHeight / 4)) / 2;
             if (expanded) {
                 f = p;
             } else {

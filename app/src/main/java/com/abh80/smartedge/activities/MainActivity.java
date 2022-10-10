@@ -81,6 +81,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 startActivity(new Intent(MainActivity.this, OverlayLayoutSettingActivity.class));
             }
         });
+        settings.add(new SettingStruct("Enable auto update checking", "App Settings", SettingStruct.TYPE_TOGGLE) {
+            @Override
+            public boolean onAttach() {
+                return sharedPreferences.getBoolean("update_enabled", true);
+            }
+
+            @Override
+            public void onCheckChanged(boolean checked) {
+                sharedPreferences.edit().putBoolean("update_enabled", checked).apply();
+            }
+        });
         settings.add(new SettingStruct("Invert long press and click functions", "App Settings", SettingStruct.TYPE_TOGGLE) {
             @Override
             public void onCheckChanged(boolean checked) {
@@ -128,7 +139,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new ItemDecoration());
         recyclerView.invalidateItemDecorations();
-        startService(new Intent(this, UpdaterService.class));
+        if (sharedPreferences.getBoolean("update_enabled", true))
+            startService(new Intent(this, UpdaterService.class));
         registerReceiver(broadcastReceiver, new IntentFilter(getPackageName() + ".UPDATE_AVAIL"));
 
     }
