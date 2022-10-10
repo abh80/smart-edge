@@ -181,7 +181,7 @@ public class NotificationPlugin extends BasePlugin {
                 h += context.dpToInt(20);
                 mView.findViewById(R.id.text_info).getLayoutParams().height = h;
                 mView.findViewById(R.id.text_info).setLayoutParams(mView.findViewById(R.id.text_info).getLayoutParams());
-                context.animateOverlay(h, context.metrics.widthPixels - context.dpToInt(15), true, new CallBack(), new CallBack(), false);
+                context.animateOverlay(h, context.metrics.widthPixels - context.dpToInt(15), true, new CallBack(), new CallBack(), true);
                 int imgH = h / 2;
                 if (imgH > context.dpToInt(50)) imgH = context.dpToInt(50);
                 animateChild(true, imgH);
@@ -343,7 +343,7 @@ public class NotificationPlugin extends BasePlugin {
         if (h == 0) h = 300;
         else h = h + 150 + context.statusBarHeight;
         h += context.dpToInt(20);
-        context.animateOverlay(h, metrics.widthPixels - context.dpToInt(15), expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
+        context.animateOverlay(h, metrics.widthPixels - context.dpToInt(15), expanded, OverLayCallBackStart, overLayCallBackEnd, onChange, false);
         int imgH = context.dpToInt(50);
         animateChild(true, imgH);
     }
@@ -370,7 +370,7 @@ public class NotificationPlugin extends BasePlugin {
     public void onCollapse() {
         if (!expanded) return;
         expanded = false;
-        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange);
+        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange , false);
         animateChild(expanded, context.dpToInt(context.minHeight / 4));
     }
 

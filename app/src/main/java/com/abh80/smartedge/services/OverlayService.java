@@ -392,7 +392,7 @@ public class OverlayService extends AccessibilityService {
         height_anim.start();
     }
 
-    public void animateOverlay(int h, int w, boolean expanded, CallBack callBackStart, CallBack callBackEnd, CallBack onChange) {
+    public void animateOverlay(int h, int w, boolean expanded, CallBack callBackStart, CallBack callBackEnd, CallBack onChange, boolean expandedPrev) {
         int init_w = w;
         if (!expanded && w == ViewGroup.LayoutParams.WRAP_CONTENT) {
             w = last_min_size;
@@ -401,7 +401,7 @@ public class OverlayService extends AccessibilityService {
 
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) mView.getLayoutParams();
         if (expanded) {
-            last_min_size = mView.getMeasuredWidth();
+            if (!expandedPrev) last_min_size = mView.getMeasuredWidth();
         }
         ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
         height_anim.setDuration(800);
