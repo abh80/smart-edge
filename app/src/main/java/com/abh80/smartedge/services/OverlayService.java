@@ -6,6 +6,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -58,8 +59,28 @@ public class OverlayService extends AccessibilityService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(getPackageName() + ".OVERLAY_LAYOUT_CHANGE")) {
-                sharedPreferences = intent.getExtras().getBundle("settings");
+            if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
+                if (sharedPreferences.getBoolean("enable_on_lockscreen", false)) return;
+
+                if (mView != null && mWindowManager != null) {
+                    try {
+                        mWindowManager.removeView(mView);
+                    } catch (Exception ignored) {
+                    }
+                    mWindowManager.addView(mView, mView.getLayoutParams());
+                }
+            } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                if (sharedPreferences.getBoolean("enable_on_lockscreen", false)) return;
+                if (mView != null && mWindowManager != null) {
+                    mWindowManager.removeView(mView);
+                }
+            } else if (intent.getAction().equals(getPackageName() + ".OVERLAY_LAYOUT_CHANGE")) {
+                Bundle settings = intent.getExtras().getBundle("settings");
+                for (String s : settings.keySet()) {
+                    if (settings.get(s) instanceof Float) {
+                        sharedPreferences.putFloat(s, settings.getFloat(s));
+                    }
+                }
                 if (mView != null && mWindowManager != null) {
                     WindowManager.LayoutParams mParams = (WindowManager.LayoutParams) mView.getLayoutParams();
 
@@ -77,7 +98,12 @@ public class OverlayService extends AccessibilityService {
                     mWindowManager.updateViewLayout(mView, mParams);
                 }
             } else {
-                sharedPreferences = intent.getExtras().getBundle("settings");
+                Bundle settings = intent.getExtras().getBundle("settings");
+                for (String s : settings.keySet()) {
+                    if (settings.get(s) instanceof Boolean) {
+                        sharedPreferences.putBoolean(s, settings.getBoolean(s));
+                    }
+                }
                 plugins.forEach(BasePlugin::onDestroy);
                 queued.clear();
                 if (mView != null && mWindowManager != null) {
@@ -147,13 +173,10 @@ public class OverlayService extends AccessibilityService {
             }
             Runtime.getRuntime().exit(0);
         });
-        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-        info.eventTypes = AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED;
-        info.notificationTimeout = 100;
-        info.feedbackType = AccessibilityEvent.TYPES_ALL_MASK;
-        setServiceInfo(info);
         IntentFilter filter = new IntentFilter(getPackageName() + ".SETTINGS_CHANGED");
         filter.addAction(getPackageName() + ".OVERLAY_LAYOUT_CHANGE");
+        filter.addAction(Intent.ACTION_USER_PRESENT);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(broadcastReceiver, filter);
 
         SharedPreferences sharedPreferences2 = getSharedPreferences(getPackageName(), MODE_PRIVATE);
@@ -192,8 +215,6 @@ public class OverlayService extends AccessibilityService {
 
         flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
 
-        if (sharedPreferences.getBoolean("enable_on_lockscreen", false))
-            flags |= WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 
         if (minWidth == 0) {
             minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 83));
@@ -273,6 +294,7 @@ public class OverlayService extends AccessibilityService {
         plugins.forEach(x -> {
             if (sharedPreferences.getBoolean(x.getID() + "_enabled", true)) x.onCreate(this);
         });
+        binded_plugin = null;
         bindPlugin();
     }
 
