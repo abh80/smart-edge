@@ -133,6 +133,13 @@ public class OverlayService extends AccessibilityService {
                 binded_plugin.onClick();
             } else
                 binded_plugin.onExpand();
+        } else {
+            animateOverlay(minHeight + dpToInt(20), minWidth + dpToInt(20), false, new CallBack(), new CallBack() {
+                @Override
+                public void onFinish() {
+                    animateOverlay(minHeight, minWidth, false, new CallBack(), new CallBack(), false);
+                }
+            }, false);
         }
     }
 
@@ -321,7 +328,7 @@ public class OverlayService extends AccessibilityService {
 
     private int last_min_size = 200;
 
-    public void animateOverlay(int h, int w, boolean expanded, CallBack callBackStart, CallBack callBackEnd) {
+    public void animateOverlay(int h, int w, boolean expanded, CallBack callBackStart, CallBack callBackEnd, boolean expandedPrev) {
         int init_w = w;
         if (!expanded && w == ViewGroup.LayoutParams.WRAP_CONTENT) {
             w = last_min_size;
@@ -329,7 +336,7 @@ public class OverlayService extends AccessibilityService {
         }
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) mView.getLayoutParams();
         if (expanded) {
-            last_min_size = mView.getMeasuredWidth();
+            if (!expandedPrev) last_min_size = mView.getMeasuredWidth();
         }
         ValueAnimator height_anim = ValueAnimator.ofInt(params.height, h);
         height_anim.setDuration(800);
@@ -348,10 +355,20 @@ public class OverlayService extends AccessibilityService {
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
                 callBackStart.onFinish();
-                if (expanded) {
-                    params.x = 0;
+                if (expanded && params.x != 0) {
+                    ValueAnimator v = ValueAnimator.ofInt(params.x, 0).setDuration(500);
+                    v.addUpdateListener(valueAnimator -> {
+                        params.x = (int) valueAnimator.getAnimatedValue();
+                    });
+                    v.start();
                 }
-                mWindowManager.updateViewLayout(mView, params);
+                if (!expanded && x != params.x) {
+                    ValueAnimator v = ValueAnimator.ofInt(params.x, x).setDuration(500);
+                    v.addUpdateListener(valueAnimator -> {
+                        params.x = (int) valueAnimator.getAnimatedValue();
+                    });
+                    v.start();
+                }
 
             }
 
@@ -360,9 +377,6 @@ public class OverlayService extends AccessibilityService {
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 callBackEnd.onFinish();
-                if (!expanded) {
-                    params.x = x;
-                }
                 if (init_w == ViewGroup.LayoutParams.WRAP_CONTENT) {
                     params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
                 }
@@ -415,7 +429,7 @@ public class OverlayService extends AccessibilityService {
                     });
                     v.start();
                 }
-                if (!expanded && x != 0) {
+                if (!expanded && x != params.x) {
                     ValueAnimator v = ValueAnimator.ofInt(params.x, x).setDuration(500);
                     v.addUpdateListener(valueAnimator -> {
                         params.x = (int) valueAnimator.getAnimatedValue();
@@ -458,7 +472,7 @@ public class OverlayService extends AccessibilityService {
                 mView.getLayoutParams().width = minWidth;
                 mView.setLayoutParams(mView.getLayoutParams());
             }
-        });
+        }, false);
 
     }
 
