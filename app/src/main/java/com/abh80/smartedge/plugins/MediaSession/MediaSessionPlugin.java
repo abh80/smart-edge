@@ -503,18 +503,20 @@ public class MediaSessionPlugin extends BasePlugin {
     private void animateChild(int h, CallBack callback) {
         View view1 = cover;
         View view2 = visualizer;
-        ViewGroup.LayoutParams params1 = view1.getLayoutParams();
-        ViewGroup.LayoutParams params2 = view2.getLayoutParams();
-        params1.height = h;
-        params2.height = h;
-        params1.width = h;
-        params2.width = h;
-        view1.setScaleY(0);
-        view1.setScaleX(0);
-        view2.setScaleX(0);
-        view2.setScaleY(0);
-        view1.setLayoutParams(params1);
-        view2.setLayoutParams(params2);
+        if (h != 0) {
+            ViewGroup.LayoutParams params1 = view1.getLayoutParams();
+            ViewGroup.LayoutParams params2 = view2.getLayoutParams();
+            params1.height = h;
+            params2.height = h;
+            params1.width = h;
+            params2.width = h;
+            view1.setScaleY(0);
+            view1.setScaleX(0);
+            view2.setScaleX(0);
+            view2.setScaleY(0);
+            view1.setLayoutParams(params1);
+            view2.setLayoutParams(params2);
+        }
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(h != 0 ? 0 : 1, h != 0 ? 1 : 0);
         valueAnimator.addUpdateListener(l -> {
             float f = (float) l.getAnimatedValue();
