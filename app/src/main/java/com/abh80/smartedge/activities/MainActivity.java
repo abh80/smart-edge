@@ -103,6 +103,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 return sharedPreferences.getBoolean("invert_click", false);
             }
         });
+        settings.add(new SettingStruct("Enable on lockscreen", "App Settings", SettingStruct.TYPE_TOGGLE) {
+            @Override
+            public boolean onAttach() {
+                return sharedPreferences.getBoolean("enable_on_lockscreen", false);
+            }
+
+            @Override
+            public void onCheckChanged(boolean checked) {
+                sharedPreferences.edit().putBoolean("enable_on_lockscreen", checked).apply();
+            }
+        });
         settings.add(new SettingStruct("Copy crash logs to clipboard", "App Settings") {
             @Override
             public boolean onAttach() {

@@ -188,9 +188,12 @@ public class OverlayService extends AccessibilityService {
     private void init() {
 
         binded_plugin = null;
-        int flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        int flags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
         flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+
+        if (sharedPreferences.getBoolean("enable_on_lockscreen", false))
+            flags |= WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 
         if (minWidth == 0) {
             minWidth = dpToInt((int) sharedPreferences.getFloat("overlay_w", 83));
