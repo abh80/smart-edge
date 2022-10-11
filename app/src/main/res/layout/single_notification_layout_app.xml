@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="24dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<com.google.android.material.imageview.ShapeableImageView
+    android:layout_width="50dp"
+    android:id="@+id/app_image"
+    android:layout_centerVertical="true"
+    app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageView"
+    android:layout_height="50dp"/>
+    <TextView
+        android:id="@+id/app_title"
+        android:textColor="@color/white"
+        android:layout_width="0dp"
+        android:layout_toStartOf="@id/app_switch"
+        android:layout_marginHorizontal="10dp"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/app_image"
+        android:layout_height="wrap_content"/>
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/app_switch"
+        android:layout_centerVertical="true"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true" />
+</RelativeLayout>

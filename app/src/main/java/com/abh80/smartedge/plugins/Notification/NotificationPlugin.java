@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -29,11 +28,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.viewpager.widget.ViewPager;
 
+import com.abh80.smartedge.activities.NotificationManageActivity;
 import com.abh80.smartedge.utils.CallBack;
 import com.abh80.smartedge.R;
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.services.OverlayService;
-import com.abh80.smartedge.utils.NotificationViewPagerAdapter;
+import com.abh80.smartedge.utils.adapters.NotificationManageAppsAdapter;
+import com.abh80.smartedge.utils.adapters.NotificationViewPagerAdapter;
 import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
@@ -59,13 +60,19 @@ public class NotificationPlugin extends BasePlugin {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_POSTED")) {
                 Bundle extras = intent.getExtras();
-                if (Notification.CATEGORY_SYSTEM.equals(extras.getString("category"))) return;
+                if (!enabled_apps.contains(extras.getString("package_name"))) return;
+                if (Notification.CATEGORY_SYSTEM.equals(extras.getString("category")) && Notification.CATEGORY_SERVICE
+                        .equals(extras.getString("category"))) return;
                 handleNotificationUpdate(extras.getString("title"), extras.getString("body"), extras.getString("package_name"),
                         extras.getInt("id"), extras);
             }
             if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_REMOVED")) {
                 int id = intent.getExtras().getInt("id");
                 handleNotificationUpdate(id);
+            }
+            if (intent.getAction().equals(context.getPackageName() + ".NOTIFICATION_APPS_UPDATE")) {
+                NotificationPlugin.this.context.sharedPreferences.putString("notifications_apps", intent.getExtras().getString("apps"));
+                enabled_apps = NotificationManageAppsAdapter.parseEnabledApps(intent.getExtras().getString("apps"));
             }
         }
     };
@@ -78,7 +85,9 @@ public class NotificationPlugin extends BasePlugin {
         IntentFilter filter = new IntentFilter();
         filter.addAction(context.getPackageName() + ".NOTIFICATION_POSTED");
         filter.addAction(context.getPackageName() + ".NOTIFICATION_REMOVED");
+        filter.addAction(context.getPackageName() + ".NOTIFICATION_APPS_UPDATE");
         context.registerReceiver(broadcastReceiver, filter);
+        enabled_apps = NotificationManageAppsAdapter.parseEnabledApps(context.sharedPreferences.getString("notifications_apps", ""));
     }
 
     NotificationMeta meta;
@@ -95,7 +104,14 @@ public class NotificationPlugin extends BasePlugin {
 
     @Override
     public ArrayList<SettingStruct> getSettings() {
-        return null;
+        ArrayList<SettingStruct> settingStructs = new ArrayList<>();
+        settingStructs.add(new SettingStruct("Manage notifications", "Notification Plugin", SettingStruct.TYPE_CUSTOM) {
+            @Override
+            public void onClick(Context c) {
+                c.startActivity(new Intent(c, NotificationManageActivity.class));
+            }
+        });
+        return settingStructs;
     }
 
     private void handleNotificationUpdate(int id) {
@@ -106,6 +122,8 @@ public class NotificationPlugin extends BasePlugin {
         if (adapter != null) adapter.notifyDataSetChanged();
         update();
     }
+
+    private ArrayList<String> enabled_apps = new ArrayList<>();
 
     private void handleNotificationUpdate(String title, String description, String packagename, int id, Bundle all) {
         if (title == null || description == null) return;
@@ -370,7 +388,7 @@ public class NotificationPlugin extends BasePlugin {
     public void onCollapse() {
         if (!expanded) return;
         expanded = false;
-        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange , false);
+        context.animateOverlay(context.minHeight, ViewGroup.LayoutParams.WRAP_CONTENT, expanded, OverLayCallBackStart, overLayCallBackEnd, onChange, false);
         animateChild(expanded, context.dpToInt(context.minHeight / 4));
     }
 

@@ -29,6 +29,7 @@
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/activity_main.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/activity_permission.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/default_dot.xml" value="0.34375" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/manage_notification_layout.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/media_session_layout.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/notification_layout.xml" value="0.22735507246376813" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/overlay_layout.xml" value="0.34479166666666666" />
@@ -36,8 +37,10 @@
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/primary_settings.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/setting_custom_layout.xml" value="0.18840579710144928" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/single_notification.xml" value="0.34375" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/single_notification_layout_app.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/toggle_setting_layout.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/layout/toggle_setting_null_layout.xml" value="0.34375" />
+        <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/menu/notifications_top_bar_menu.xml" value="0.34375" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2455" />
         <entry key="..\:/Users/suman/OneDrive/Documents/Repos-2/smart-edge/app/src/main/res/xml/global_action_bar_service.xml" value="0.16666666666666666" />

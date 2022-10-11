@@ -18,4 +18,6 @@
     <string name="minimum_width_of_overlay_when_closed">Minimum Width of overlay when closed</string>
     <string name="space_between_icons_when_overlay_is_shrinked">Space between icons when overlay is shrinked</string>
     <string name="reset">Reset</string>
+    <string name="select_applications_to_allow">Select applications to allow</string>
+    <string name="all">all</string>
 </resources>

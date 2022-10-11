@@ -1,4 +1,4 @@
-package com.abh80.smartedge.utils;
+package com.abh80.smartedge.utils.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;

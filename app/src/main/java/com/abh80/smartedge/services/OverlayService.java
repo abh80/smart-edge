@@ -152,7 +152,7 @@ public class OverlayService extends AccessibilityService {
         return START_STICKY;
     }
 
-    Bundle sharedPreferences = new Bundle();
+    public Bundle sharedPreferences = new Bundle();
 
     private WindowManager.LayoutParams getParams(int width, int height, int extFlags) {
         return new WindowManager.LayoutParams(
@@ -193,6 +193,8 @@ public class OverlayService extends AccessibilityService {
                 sharedPreferences.putBoolean(key, (boolean) value);
             else if (value instanceof Float) {
                 sharedPreferences.putFloat(key, (float) value);
+            } else if (value instanceof String) {
+                sharedPreferences.putString(key, (String) value);
             }
         });
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);

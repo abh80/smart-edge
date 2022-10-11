@@ -21,9 +21,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:hardwareAccelerated="true"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -45,8 +45,8 @@
 
         <activity
             android:name=".activities.MainActivity"
-            android:hardwareAccelerated="false"
-            android:exported="true">
+            android:exported="true"
+            android:hardwareAccelerated="false">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
                 <action android:name="android.intent.action.MAIN" />
@@ -54,12 +54,12 @@
         </activity>
         <activity
             android:name=".activities.PermissionActivity"
-            android:hardwareAccelerated="false"
-            android:exported="false" />
+            android:exported="false"
+            android:hardwareAccelerated="false" />
         <activity
             android:name=".activities.OverlayLayoutSettingActivity"
-            android:hardwareAccelerated="false"
-            android:exported="false" />
+            android:exported="false"
+            android:hardwareAccelerated="false" />
 
         <service
             android:name=".services.NotiService"
@@ -70,6 +70,9 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <activity
+            android:name=".activities.NotificationManageActivity"
+            android:exported="false" />
         <service
             android:name=".services.OverlayService"
             android:enabled="true"
