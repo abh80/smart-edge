@@ -17,9 +17,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/t1"
@@ -28,20 +29,62 @@
                     android:text="@string/x_offset"
                     android:textSize="18sp" />
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/seekbar_x"
+                <TextView
+                    android:id="@+id/val_x"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/t1"
-                    android:layout_marginTop="10dp"
-                    android:value="0"
-                    android:valueFrom="-50"
-                    android:valueTo="50" />
-            </RelativeLayout>
+                    android:layout_marginTop="5dp" />
 
-            <RelativeLayout
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/add_x"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:clickable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_add_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/sub_x"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_remove_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/seekbar_x"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toStartOf="@id/add_x"
+                        android:layout_toEndOf="@id/sub_x"
+                        android:value="0"
+                        android:valueFrom="-50"
+                        android:valueTo="50" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/t2"
@@ -50,20 +93,62 @@
                     android:text="@string/y_offset"
                     android:textSize="18sp" />
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/seekbar_y"
+                <TextView
+                    android:id="@+id/val_y"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/t2"
-                    android:layout_marginTop="10dp"
-                    android:value="0.67"
-                    android:valueFrom="0"
-                    android:valueTo="100" />
-            </RelativeLayout>
+                    android:layout_marginTop="5dp" />
 
-            <RelativeLayout
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/add_y"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:clickable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_add_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/sub_y"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_remove_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/seekbar_y"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toStartOf="@id/add_y"
+                        android:layout_toEndOf="@id/sub_y"
+                        android:value="0.67"
+                        android:valueFrom="0"
+                        android:valueTo="100" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/t3"
@@ -72,20 +157,62 @@
                     android:text="@string/height_of_overlay_when_shrinked"
                     android:textSize="18sp" />
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/seekbar_h"
+                <TextView
+                    android:id="@+id/val_h"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/t3"
-                    android:layout_marginTop="10dp"
-                    android:value="40"
-                    android:valueFrom="0"
-                    android:valueTo="100" />
-            </RelativeLayout>
+                    android:layout_marginTop="5dp" />
 
-            <RelativeLayout
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/add_h"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:clickable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_add_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/sub_h"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_remove_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/seekbar_h"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toStartOf="@id/add_h"
+                        android:layout_toEndOf="@id/sub_h"
+                        android:value="40"
+                        android:valueFrom="0"
+                        android:valueTo="100" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/t4"
@@ -94,20 +221,62 @@
                     android:text="@string/minimum_width_of_overlay_when_closed"
                     android:textSize="18sp" />
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/seekbar_w"
+                <TextView
+                    android:id="@+id/val_w"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/t4"
-                    android:layout_marginTop="10dp"
-                    android:value="83"
-                    android:valueFrom="0"
-                    android:valueTo="200" />
-            </RelativeLayout>
+                    android:layout_marginTop="5dp" />
 
-            <RelativeLayout
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/add_w"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:clickable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_add_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/sub_w"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_remove_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/seekbar_w"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toStartOf="@+id/add_w"
+                        android:layout_toEndOf="@id/sub_w"
+                        android:value="83"
+                        android:valueFrom="0"
+                        android:valueTo="200" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/t5"
@@ -116,16 +285,57 @@
                     android:text="@string/space_between_icons_when_overlay_is_shrinked"
                     android:textSize="18sp" />
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/seekbar_gap"
+                <TextView
+                    android:id="@+id/val_gap"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/t5"
-                    android:layout_marginTop="10dp"
-                    android:value="50"
-                    android:valueFrom="0"
-                    android:valueTo="100" />
-            </RelativeLayout>
+                    android:layout_marginTop="5dp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/add_gap"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:clickable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_add_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/sub_gap"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_centerVertical="true"
+                        android:background="@color/transparent"
+                        android:padding="1dp"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_baseline_remove_24"
+                        app:shapeAppearance="@style/ShapeAppearanceOverlay.App.roundedImageViewCircle"
+                        app:strokeColor="?attr/colorPrimary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/seekbar_gap"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toStartOf="@+id/add_gap"
+                        android:layout_toEndOf="@id/sub_gap"
+                        android:value="50"
+                        android:valueFrom="0"
+                        android:valueTo="100" />
+                </RelativeLayout>
+            </LinearLayout>
 
             <Button
                 android:id="@+id/reset_btn"
