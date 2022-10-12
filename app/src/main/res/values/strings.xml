@@ -20,4 +20,6 @@
     <string name="reset">Reset</string>
     <string name="select_applications_to_allow">Select applications to allow</string>
     <string name="all">all</string>
+    <string name="needed_to_show_notifications_and_media_sessions">Needed to show notifications and media sessions</string>
+    <string name="needed_to_show_song_visualizer_never_to_be_used_for_recording_mic_audio">Needed to show song visualizer. Never to be used for recording mic audio</string>
 </resources>

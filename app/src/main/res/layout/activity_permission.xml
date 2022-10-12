@@ -37,14 +37,13 @@
         android:clickable="true"
         android:elevation="1dp"
         android:focusable="true"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
-        tools:layout_editor_absoluteX="24dp">
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            tools:layout_editor_absoluteX="24dp">
+            android:orientation="horizontal">
 
             <CheckBox
                 android:id="@+id/notification_access_checkbox"
@@ -53,13 +52,30 @@
                 android:clickable="false"
                 android:focusable="false" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/notification_access"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notification_access"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/needed_to_show_notifications_and_media_sessions"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                    android:textColor="@color/quite_white"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -88,13 +104,29 @@
                 android:clickable="false"
                 android:focusable="false" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/record_audio_from_apps"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/record_audio_from_apps"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/needed_to_show_song_visualizer_never_to_be_used_for_recording_mic_audio"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                    android:textColor="@color/quite_white"
+                    android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
