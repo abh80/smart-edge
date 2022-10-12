@@ -15,7 +15,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
-        release {
+        github {
             def tmpFilePath = System.getProperty("user.home") + "/work/_temp/keystore/keystore.jks"
             storeFile = file(tmpFilePath)
             storePassword System.getenv("SIGNING_KEY_PASSWORD")
@@ -25,10 +25,14 @@ android {
     }
 
     buildTypes {
+        github {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.github
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
         }
     }
     compileOptions {
