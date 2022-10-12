@@ -1,0 +1,2 @@
+* Added fine tuning for overlay position.
+* Fixed error during screen off.
