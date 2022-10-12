@@ -28,11 +28,17 @@ android {
         github {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "Boolean" , "AUTO_UPDATE" , "true"
             signingConfig signingConfigs.github
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "Boolean" , "AUTO_UPDATE" , "false"
+        }
+        debug {
+            minifyEnabled false
+            buildConfigField "Boolean" , "AUTO_UPDATE" , "true"
         }
     }
     compileOptions {
