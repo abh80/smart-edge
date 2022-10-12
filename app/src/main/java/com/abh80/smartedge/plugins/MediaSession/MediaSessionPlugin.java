@@ -422,7 +422,8 @@ public class MediaSessionPlugin extends BasePlugin {
 
     @Override
     public void onClick() {
-        if (expanded) return;
+        if (expanded && !ctx.sharedPreferences.getBoolean("ms_enable_touch_expanded", false))
+            return;
         if (mCurrent != null && mCurrent.getSessionActivity() != null) {
             try {
                 mCurrent.getSessionActivity().send(0);
@@ -444,7 +445,22 @@ public class MediaSessionPlugin extends BasePlugin {
 
     @Override
     public ArrayList<SettingStruct> getSettings() {
-        return null;
+        ArrayList<SettingStruct> s = new ArrayList<>();
+        s.add(new SettingStruct("Open music app on touch when expanded", "Media Session", SettingStruct.TYPE_TOGGLE) {
+            @Override
+            public boolean onAttach(Context ctx) {
+                return ctx.getSharedPreferences(ctx.getPackageName(), Context.MODE_PRIVATE).getBoolean("ms_enable_touch_expanded", false);
+            }
+
+            @Override
+            public void onCheckChanged(boolean checked, Context ctx) {
+                ctx.getSharedPreferences(ctx.getPackageName(), Context.MODE_PRIVATE).edit().putBoolean("ms_enable_touch_expanded", checked).apply();
+                if (MediaSessionPlugin.this.ctx != null) {
+                    MediaSessionPlugin.this.ctx.sharedPreferences.putBoolean("ms_enable_touch_expanded", checked);
+                }
+            }
+        });
+        return s;
     }
 
 

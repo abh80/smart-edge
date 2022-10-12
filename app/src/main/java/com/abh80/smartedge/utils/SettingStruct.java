@@ -22,13 +22,13 @@ public class SettingStruct {
         this.type = type;
     }
 
-    public void onCheckChanged(boolean checked) {
+    public void onCheckChanged(boolean checked , Context ctx) {
     }
 
     public void onClick(Context ctx) {
     }
 
-    public boolean onAttach() {
+    public boolean onAttach(Context ctx) {
         return false;
     }
 }

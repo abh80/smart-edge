@@ -54,9 +54,9 @@ public class RecylerViewSettingsAdapter extends RecyclerView.Adapter<RecylerView
         }
         if (holder.ViewType == SettingStruct.TYPE_TOGGLE) {
             holder.switchBtn.setOnCheckedChangeListener((compoundButton, b) -> {
-                settings.get(position).onCheckChanged(b);
+                settings.get(position).onCheckChanged(b, context);
             });
-            holder.switchBtn.setChecked(settings.get(position).onAttach());
+            holder.switchBtn.setChecked(settings.get(position).onAttach(context));
         }
     }
 

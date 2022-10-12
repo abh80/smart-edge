@@ -82,45 +82,45 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         });
         settings.add(new SettingStruct("Enable auto update checking", "App Settings", SettingStruct.TYPE_TOGGLE) {
             @Override
-            public boolean onAttach() {
+            public boolean onAttach(Context ctx) {
                 return sharedPreferences.getBoolean("update_enabled", true);
             }
 
             @Override
-            public void onCheckChanged(boolean checked) {
+            public void onCheckChanged(boolean checked, Context ctx) {
                 sharedPreferences.edit().putBoolean("update_enabled", checked).apply();
             }
         });
         settings.add(new SettingStruct("Invert long press and click functions", "App Settings", SettingStruct.TYPE_TOGGLE) {
             @Override
-            public void onCheckChanged(boolean checked) {
+            public void onCheckChanged(boolean checked, Context ctx) {
                 sharedPreferences.edit().putBoolean("invert_click", checked).apply();
             }
 
             @Override
-            public boolean onAttach() {
+            public boolean onAttach(Context ctx) {
                 return sharedPreferences.getBoolean("invert_click", false);
             }
         });
         settings.add(new SettingStruct("Enable on lockscreen", "App Settings", SettingStruct.TYPE_TOGGLE) {
             @Override
-            public boolean onAttach() {
+            public boolean onAttach(Context ctx) {
                 return sharedPreferences.getBoolean("enable_on_lockscreen", false);
             }
 
             @Override
-            public void onCheckChanged(boolean checked) {
+            public void onCheckChanged(boolean checked, Context ctx) {
                 sharedPreferences.edit().putBoolean("enable_on_lockscreen", checked).apply();
             }
         });
         settings.add(new SettingStruct("Copy crash logs to clipboard", "App Settings") {
             @Override
-            public boolean onAttach() {
+            public boolean onAttach(Context ctx) {
                 return sharedPreferences.getBoolean("clip_copy_enabled", true);
             }
 
             @Override
-            public void onCheckChanged(boolean checked) {
+            public void onCheckChanged(boolean checked, Context ctx) {
                 sharedPreferences.edit().putBoolean("clip_copy_enabled", checked).apply();
             }
         });
@@ -128,12 +128,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         ExportedPlugins.getPlugins().forEach(x -> {
             settings.add(new SettingStruct("Enable " + x.getName() + " Plugin", x.getName() + " Plugin Settings") {
                              @Override
-                             public boolean onAttach() {
+                             public boolean onAttach(Context ctx) {
                                  return sharedPreferences.getBoolean(x.getID() + "_enabled", true);
                              }
 
                              @Override
-                             public void onCheckChanged(boolean checked) {
+                             public void onCheckChanged(boolean checked, Context ctx) {
                                  sharedPreferences.edit().putBoolean(x.getID() + "_enabled", checked).apply();
                              }
                          }
