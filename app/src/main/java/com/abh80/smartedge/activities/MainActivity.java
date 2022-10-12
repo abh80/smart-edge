@@ -80,17 +80,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 startActivity(new Intent(MainActivity.this, OverlayLayoutSettingActivity.class));
             }
         });
-        settings.add(new SettingStruct("Enable auto update checking", "App Settings", SettingStruct.TYPE_TOGGLE) {
-            @Override
-            public boolean onAttach(Context ctx) {
-                return sharedPreferences.getBoolean("update_enabled", true);
-            }
+        if (BuildConfig.AUTO_UPDATE)
+            settings.add(new SettingStruct("Enable auto update checking", "App Settings", SettingStruct.TYPE_TOGGLE) {
+                @Override
+                public boolean onAttach(Context ctx) {
+                    return sharedPreferences.getBoolean("update_enabled", true);
+                }
 
-            @Override
-            public void onCheckChanged(boolean checked, Context ctx) {
-                sharedPreferences.edit().putBoolean("update_enabled", checked).apply();
-            }
-        });
+                @Override
+                public void onCheckChanged(boolean checked, Context ctx) {
+                    sharedPreferences.edit().putBoolean("update_enabled", checked).apply();
+                }
+            });
         settings.add(new SettingStruct("Invert long press and click functions", "App Settings", SettingStruct.TYPE_TOGGLE) {
             @Override
             public void onCheckChanged(boolean checked, Context ctx) {
