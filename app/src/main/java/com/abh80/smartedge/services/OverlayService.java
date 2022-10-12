@@ -62,19 +62,12 @@ public class OverlayService extends AccessibilityService {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
                 if (sharedPreferences.getBoolean("enable_on_lockscreen", false)) return;
-
-                if (mView != null && mWindowManager != null) {
-                    try {
-                        mWindowManager.removeView(mView);
-                    } catch (Exception ignored) {
-                    }
-                    mWindowManager.addView(mView, mView.getLayoutParams());
+                if (mView != null) {
+                    mView.setVisibility(View.VISIBLE);
                 }
             } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
                 if (sharedPreferences.getBoolean("enable_on_lockscreen", false)) return;
-                if (mView != null && mWindowManager != null) {
-                    mWindowManager.removeView(mView);
-                }
+                mView.setVisibility(View.INVISIBLE);
             } else if (intent.getAction().equals(getPackageName() + ".OVERLAY_LAYOUT_CHANGE")) {
                 Bundle settings = intent.getExtras().getBundle("settings");
                 for (String s : settings.keySet()) {
