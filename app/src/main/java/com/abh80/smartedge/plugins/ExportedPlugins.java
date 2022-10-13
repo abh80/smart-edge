@@ -1,5 +1,6 @@
 package com.abh80.smartedge.plugins;
 
+import com.abh80.smartedge.plugins.BatteryPlugin.BatteryPlugin;
 import com.abh80.smartedge.plugins.MediaSession.MediaSessionPlugin;
 import com.abh80.smartedge.plugins.Notification.NotificationPlugin;
 
@@ -10,6 +11,7 @@ public class ExportedPlugins {
         ArrayList<BasePlugin> plugins = new ArrayList<>();
         plugins.add(new MediaSessionPlugin());
         plugins.add(new NotificationPlugin());
+        plugins.add(new BatteryPlugin());
         return plugins;
     }
 }

@@ -1,4 +1,4 @@
-package com.abh80.smartedge.utils;
+package com.abh80.smartedge.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
