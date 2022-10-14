@@ -38,6 +38,7 @@ import com.abh80.smartedge.plugins.ExportedPlugins;
 import com.abh80.smartedge.services.UpdaterService;
 import com.abh80.smartedge.utils.adapters.RecylerViewSettingsAdapter;
 import com.abh80.smartedge.utils.SettingStruct;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -78,6 +79,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             @Override
             public void onClick(Context c) {
                 startActivity(new Intent(MainActivity.this, OverlayLayoutSettingActivity.class));
+            }
+        });
+        settings.add(new SettingStruct("Overlay color", "App Settings", SettingStruct.TYPE_CUSTOM) {
+            @Override
+            public void onClick(Context ctx) {
+                startActivity(new Intent(MainActivity.this, AppearanceActivity.class));
             }
         });
         if (BuildConfig.AUTO_UPDATE)

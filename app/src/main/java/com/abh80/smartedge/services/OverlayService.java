@@ -14,7 +14,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,6 +39,7 @@ import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.ContextCompat;
 
 import com.abh80.smartedge.plugins.BasePlugin;
 import com.abh80.smartedge.plugins.ExportedPlugins;
@@ -53,7 +56,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class OverlayService extends AccessibilityService {
-
     private final ArrayList<BasePlugin> plugins = ExportedPlugins.getPlugins();
     public int minHeight;
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -91,6 +93,15 @@ public class OverlayService extends AccessibilityService {
                     }
                     mWindowManager.updateViewLayout(mView, mParams);
                 }
+            } else if (intent.getAction().equals(getPackageName() + ".COLOR_CHANGED")) {
+                color = intent.getExtras().getInt("color");
+                textColor = isColorDark(color) ? getColor(R.color.white) : getColor(R.color.black);
+                if (mView != null) {
+                    mView.setBackgroundTintList(ColorStateList.valueOf(color));
+                    if (binded_plugin != null) {
+                        binded_plugin.onTextColorChange();
+                    }
+                }
             } else {
                 Bundle settings = intent.getExtras().getBundle("settings");
                 for (String s : settings.keySet()) {
@@ -108,6 +119,7 @@ public class OverlayService extends AccessibilityService {
         }
     };
     public int x, y;
+    private int color;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
@@ -178,6 +190,7 @@ public class OverlayService extends AccessibilityService {
         filter.addAction(getPackageName() + ".OVERLAY_LAYOUT_CHANGE");
         filter.addAction(Intent.ACTION_USER_PRESENT);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(getPackageName() + ".COLOR_CHANGED");
         registerReceiver(broadcastReceiver, filter);
 
         SharedPreferences sharedPreferences2 = getSharedPreferences(getPackageName(), MODE_PRIVATE);
@@ -188,6 +201,8 @@ public class OverlayService extends AccessibilityService {
                 sharedPreferences.putFloat(key, (float) value);
             } else if (value instanceof String) {
                 sharedPreferences.putString(key, (String) value);
+            } else if (value instanceof Integer) {
+                sharedPreferences.putInt(key, (int) value);
             }
         });
         mWindowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
@@ -210,6 +225,15 @@ public class OverlayService extends AccessibilityService {
 
     public int statusBarHeight = 0;
 
+    private boolean isColorDark(int color) {
+        // Source : https://stackoverflow.com/a/24261119
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        // It's a dark color
+        return !(darkness < 0.5); // It's a light color
+    }
+
+    public int textColor;
+
     @SuppressLint("ClickableViewAccessibility")
     private void init() {
 
@@ -228,11 +252,14 @@ public class OverlayService extends AccessibilityService {
         if (gap == 0) {
             gap = dpToInt((int) sharedPreferences.getFloat("overlay_gap", 50));
         }
+        color = sharedPreferences.getInt("color", getColor(R.color.black));
+        textColor = isColorDark(color) ? getColor(R.color.white) : getColor(R.color.black);
         last_min_size = minWidth;
         WindowManager.LayoutParams mParams = getParams(minWidth, minHeight, flags);
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         getBaseContext().setTheme(R.style.Theme_SmartEdge);
         mView = layoutInflater.inflate(R.layout.overlay_layout, null);
+
         ctx = DynamicColors.wrapContextIfAvailable(getBaseContext(), com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_DayNight);
         mParams.gravity = Gravity.TOP | Gravity.CENTER;
         if (y == 0) {
@@ -242,6 +269,8 @@ public class OverlayService extends AccessibilityService {
         if (x == 0) {
             x = (int) (sharedPreferences.getFloat("overlay_x", 0) * 0.01f * metrics.widthPixels);
         }
+        mView.setBackgroundTintList(ColorStateList.valueOf(color));
+
         mParams.x = x;
         Runnable mLongPressed = this::expandOverlay;
         try {

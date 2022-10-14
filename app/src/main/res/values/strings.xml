@@ -22,4 +22,7 @@
     <string name="all">all</string>
     <string name="needed_to_show_notifications_and_media_sessions">Needed to show notifications and media sessions</string>
     <string name="needed_to_show_song_visualizer_never_to_be_used_for_recording_mic_audio">Needed to show song visualizer. Never to be used for recording mic audio</string>
+    <string name="select_color_to_apply_to_background">Select color to apply to background</string>
+    <string name="color_hex">Color (hex)</string>
+    <string name="apply">Apply</string>
 </resources>

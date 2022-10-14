@@ -23,11 +23,6 @@ import java.text.DecimalFormat;
 
 public class OverlayLayoutSettingActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
-
-    private int dpToInt(int v) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
-    }
-
     Slider h;
     TextView val_h;
     ShapeableImageView add_h;

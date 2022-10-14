@@ -4,7 +4,11 @@ plugins {
 
 android {
     compileSdk 32
-
+    sourceSets {
+        github {
+            manifest.srcFile 'github/AndroidManifest.xml'
+        }
+    }
     defaultConfig {
         applicationId "com.abh80.smartedge"
         minSdk 26
@@ -29,17 +33,17 @@ android {
         github {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField "Boolean" , "AUTO_UPDATE" , "true"
+            buildConfigField "Boolean", "AUTO_UPDATE", "true"
             signingConfig signingConfigs.github
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField "Boolean" , "AUTO_UPDATE" , "false"
+            buildConfigField "Boolean", "AUTO_UPDATE", "false"
         }
         debug {
             minifyEnabled false
-            buildConfigField "Boolean" , "AUTO_UPDATE" , "true"
+            buildConfigField "Boolean", "AUTO_UPDATE", "true"
         }
     }
     compileOptions {

@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.OvershootInterpolator;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -161,6 +163,11 @@ public class NotificationPlugin extends BasePlugin {
         mHandler.postDelayed(() -> context.dequeue(this), 301);
     }
 
+    @Override
+    public void onTextColorChange() {
+        ((ImageView) mView.findViewById(R.id.cover2)).setImageTintList(ColorStateList.valueOf(context.textColor));
+    }
+
     private void closeOverlay(CallBack callBack) {
         overlayOpen = false;
         if (expanded) onCollapse();
@@ -230,6 +237,7 @@ public class NotificationPlugin extends BasePlugin {
             }
             if (large_i != null) imageView.setImageDrawable(large_i);
             else imageView.setImageDrawable(meta.getIcon_drawable());
+            ((ImageView) mView.findViewById(R.id.cover2)).setImageTintList(ColorStateList.valueOf(context.textColor));
         }
     }
 
@@ -240,6 +248,8 @@ public class NotificationPlugin extends BasePlugin {
             ViewPager pager = mView.findViewById(R.id.text_info);
             View v = (View) pager.findViewWithTag("mv_" + pager.getCurrentItem());
             if (v != null) {
+                ((TextView) v.findViewById(R.id.title)).setTextColor(context.textColor);
+                ((TextView) v.findViewById(R.id.text_description)).setTextColor(context.textColor);
                 StringBuilder stringBuilder = new StringBuilder();
                 String name = meta.getAll().getString("name");
                 if (name != null) stringBuilder.append(name).append(" • ");

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 public abstract class BasePlugin {
     public abstract String getID();
+
     public abstract String getName();
 
     public abstract void onCreate(OverlayService context);
@@ -26,6 +27,9 @@ public abstract class BasePlugin {
 
     public abstract void onClick();
 
+    public void onTextColorChange() {
+    }
+
     public abstract String[] permissionsRequired();
 
     public void onEvent(AccessibilityEvent event) {
@@ -35,6 +39,10 @@ public abstract class BasePlugin {
 
     public void onBindComplete() {
     }
-    public void onRightSwipe(){}
-    public void onLeftSwipe(){}
+
+    public void onRightSwipe() {
+    }
+
+    public void onLeftSwipe() {
+    }
 }

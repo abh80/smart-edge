@@ -54,6 +54,10 @@
             android:name=".activities.OverlayLayoutSettingActivity"
             android:exported="false"
             android:hardwareAccelerated="false" />
+        <activity
+            android:name=".activities.AppearanceActivity"
+            android:exported="false"
+            android:hardwareAccelerated="false" />
 
         <service
             android:name=".services.NotiService"

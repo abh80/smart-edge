@@ -50,6 +50,8 @@ public class NotificationViewPagerAdapter extends PagerAdapter {
         ((TextView) mView.findViewById(R.id.author)).setTextColor(value);
         mView.findViewById(R.id.title).setSelected(true);
         mView.findViewById(R.id.text_description).setSelected(true);
+        ((TextView) mView.findViewById(R.id.title)).setTextColor(ctx.textColor);
+        ((TextView) mView.findViewById(R.id.text_description)).setTextColor(ctx.textColor);
         container.addView(mView);
         mView.setTag("mv_" + position);
         return mView;

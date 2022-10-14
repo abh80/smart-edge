@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    android:backgroundTint="@color/black"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/rounded_corner"
     tools:layout_height="200dp"
-    android:animateLayoutChanges="true"
     tools:layout_width="200dp">
 
 </androidx.constraintlayout.widget.ConstraintLayout>

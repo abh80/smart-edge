@@ -7,8 +7,10 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
@@ -35,6 +37,7 @@ import com.abh80.smartedge.utils.SettingStruct;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.w3c.dom.Text;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -124,6 +127,7 @@ public class MediaSessionPlugin extends BasePlugin {
     public void onPlayerResume(boolean b) {
         if (expanded && b) {
             pause_play.setImageDrawable(ctx.getDrawable(R.drawable.avd_play_to_pause));
+            pause_play.setImageTintList(ColorStateList.valueOf(ctx.textColor));
             ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
         }
         if (mCurrent == null) return;
@@ -167,6 +171,7 @@ public class MediaSessionPlugin extends BasePlugin {
     public void onPlayerPaused(boolean b) {
         if (expanded && b) {
             pause_play.setImageDrawable(ctx.getDrawable(R.drawable.avd_pause_to_play));
+            pause_play.setImageTintList(ColorStateList.valueOf(ctx.textColor));
             ((AnimatedVectorDrawable) pause_play.getDrawable()).start();
         }
         last_played = Instant.now();
@@ -249,14 +254,16 @@ public class MediaSessionPlugin extends BasePlugin {
 
     private View mView;
     private ShapeableImageView cover;
+    ImageView back;
+    ImageView next;
 
     private void init() {
         seekBar = mView.findViewById(R.id.progressBar);
         elapsedView = mView.findViewById(R.id.elapsed);
         remainingView = mView.findViewById(R.id.remaining);
         pause_play = mView.findViewById(R.id.pause_play);
-        ImageView next = mView.findViewById(R.id.next_play);
-        ImageView back = mView.findViewById(R.id.back_play);
+        next = mView.findViewById(R.id.next_play);
+        back = mView.findViewById(R.id.back_play);
         cover = mView.findViewById(R.id.cover);
         coverHolder = mView.findViewById(R.id.relativeLayout);
         text_info = mView.findViewById(R.id.text_info);
@@ -272,6 +279,17 @@ public class MediaSessionPlugin extends BasePlugin {
 
             }
         });
+        TextView titleView = mView.findViewById(R.id.title);
+        TextView artistView = mView.findViewById(R.id.artist_subtitle);
+        elapsedView.setTextColor(ctx.textColor);
+        remainingView.setTextColor(ctx.textColor);
+        titleView.setTextColor(ctx.textColor);
+        artistView.setTextColor(ctx.textColor);
+        back.setImageTintList(ColorStateList.valueOf(ctx.textColor));
+        next.setImageTintList(ColorStateList.valueOf(ctx.textColor));
+        pause_play.setImageTintList(ColorStateList.valueOf(ctx.textColor));
+        seekBar.getProgressDrawable().setColorFilter(ctx.textColor, PorterDuff.Mode.SRC_ATOP);
+
         next.setOnClickListener(l -> {
             if (mCurrent == null) return;
             mCurrent.getTransportControls().skipToNext();
@@ -318,6 +336,20 @@ public class MediaSessionPlugin extends BasePlugin {
         mCurrent = null;
         mView = null;
 
+    }
+
+    @Override
+    public void onTextColorChange() {
+        TextView titleView = mView.findViewById(R.id.title);
+        TextView artistView = mView.findViewById(R.id.artist_subtitle);
+        elapsedView.setTextColor(ctx.textColor);
+        remainingView.setTextColor(ctx.textColor);
+        titleView.setTextColor(ctx.textColor);
+        artistView.setTextColor(ctx.textColor);
+        back.setImageTintList(ColorStateList.valueOf(ctx.textColor));
+        next.setImageTintList(ColorStateList.valueOf(ctx.textColor));
+        pause_play.setImageTintList(ColorStateList.valueOf(ctx.textColor));
+        seekBar.getProgressDrawable().setColorFilter(ctx.textColor, PorterDuff.Mode.SRC_ATOP);
     }
 
     RelativeLayout coverHolder;
@@ -391,8 +423,10 @@ public class MediaSessionPlugin extends BasePlugin {
                 if (mCurrent != null && mCurrent.getPlaybackState() != null) {
                     if (mCurrent.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
                         pause_play.setImageDrawable(ctx.getDrawable(R.drawable.pause));
+                        pause_play.setImageTintList(ColorStateList.valueOf(ctx.textColor));
                     } else {
                         pause_play.setImageDrawable(ctx.getDrawable(R.drawable.play));
+                        pause_play.setImageTintList(ColorStateList.valueOf(ctx.textColor));
                     }
                 }
                 mHandler.post(r);
@@ -472,6 +506,7 @@ public class MediaSessionPlugin extends BasePlugin {
         titleView.setText(queueStruct.getTitle());
         artistView.setText(queueStruct.getArtist());
         imageView.setImageBitmap(queueStruct.getCover());
+
     }
 
 
