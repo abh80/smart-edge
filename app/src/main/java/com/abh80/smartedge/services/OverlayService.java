@@ -502,7 +502,7 @@ public class OverlayService extends AccessibilityService {
                 vGap.setLayoutParams(params1);
             }
             mWindowManager.updateViewLayout(mView, params);
-            binded_plugin.onBindComplete();
+            if (binded_plugin != null) binded_plugin.onBindComplete();
             return;
         }
         ViewGroup parent = (ViewGroup) replace.getParent();
@@ -521,7 +521,7 @@ public class OverlayService extends AccessibilityService {
             vGap.setLayoutParams(params1);
         }
         mWindowManager.updateViewLayout(mView, params);
-        binded_plugin.onBindComplete();
+        if (binded_plugin != null) binded_plugin.onBindComplete();
     }
 
     @Override
