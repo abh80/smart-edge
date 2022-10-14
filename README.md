@@ -3,8 +3,12 @@
 # Downloads
 
   [![Download Button](https://img.shields.io/github/v/release/abh80/smart-edge?color=7885FF&label=Android-Apk&logo=android&style=for-the-badge)](https://github.com/abh80/smart-edge/releases/download/20202/release.apk)
-# Previews
-
-  <img src = "https://user-images.githubusercontent.com/50198413/192252474-15852727-e487-4094-ae0f-bfc0f2c4ff06.png" width = "500"/>
+# Donations
+  Help support the project by donating ❤️
   
-  <img src = "https://user-images.githubusercontent.com/50198413/192252553-ee8fa52d-a3ec-4292-83a0-8ec3d9bb7787.png" width = "500"/>
+  <a href="https://paypal.me/devabh80">
+    <img width="300" src="https://raw.githubusercontent.com/stefan-niedermann/paypal-donate-button/master/paypal-donate-button.png" alt="Donate with PayPal" />
+  </a>
+
+# Previews
+<img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot.png" width="500"/>
