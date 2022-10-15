@@ -115,7 +115,7 @@ public class UpdaterService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcastReceiver);
-        manager.cancel(100);
+        manager.cancel(1001);
     }
 
     NotificationManager manager;
@@ -135,7 +135,7 @@ public class UpdaterService extends Service {
                 .setPriority(priority)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
-        manager.notify(100, notification);
+        manager.notify(1001, notification);
     }
     class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
@@ -210,7 +210,7 @@ public class UpdaterService extends Service {
                     .setProgress(100, Integer.parseInt(String.valueOf(progress[0])), false);
 
             Notification notification = notificationBuilder.build();
-            manager.notify(100, notification);
+            manager.notify(1001, notification);
         }
 
         //  Source for below codes : https://medium.com/@vishtech36/installing-apps-programmatically-in-android-10-7e39cfe22b86
