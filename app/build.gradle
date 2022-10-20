@@ -15,7 +15,6 @@ android {
         targetSdk 32
         versionCode 20203
         versionName "2.2.3"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -26,19 +25,16 @@ android {
             keyAlias System.getenv("SIGNING_KEY_ALIAS")
             keyPassword System.getenv("SIGNING_KEY_PASSWORD")
         }
-
     }
 
     buildTypes {
         github {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "Boolean", "AUTO_UPDATE", "true"
             signingConfig signingConfigs.github
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "Boolean", "AUTO_UPDATE", "false"
         }
         debug {

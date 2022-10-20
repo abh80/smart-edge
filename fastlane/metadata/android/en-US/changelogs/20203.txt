@@ -1,2 +1,2 @@
 * New bug fixes
-* Improved stabalization
+* Improved stabilization
