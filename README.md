@@ -2,7 +2,7 @@
   Alternative to dynamic island for android.
 # Downloads
 
-  [![Download Button](https://img.shields.io/github/v/release/abh80/smart-edge?color=7885FF&label=Android-Apk&logo=android&style=for-the-badge)](https://github.com/abh80/smart-edge/releases/download/20203/release.apk)
+  [![Download Button](https://img.shields.io/github/v/release/abh80/smart-edge?color=7885FF&label=Android-Apk&logo=android&style=for-the-badge)](https://github.com/abh80/smart-edge/releases/download/20204/release.apk)
 # Donations
   Help support the project by donating ❤️
   
